@@ -406,10 +406,15 @@ public class TraitsServicesImpl implements TraitsServices {
 				attribution = trait.getSource();
 
 			if (trait.getIsParticipatory() == false) {
-				Long authorId = factsDao.getObservationAuthor(objectId.toString());
-				if (!(userRole.contains("ROLE_ADMIN") || authorId != userId)) {
-					throw new TraitsException("User not allowed to add this traits");
+				if (objectType.equalsIgnoreCase("species.Species")) {
+
+				} else {
+					Long authorId = factsDao.getObservationAuthor(objectId.toString());
+					if (!(userRole.contains("ROLE_ADMIN") || authorId != userId)) {
+						throw new TraitsException("User not allowed to add this traits");
+					}
 				}
+
 			}
 
 //			traits with preDefined list
