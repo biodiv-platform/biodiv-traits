@@ -389,12 +389,12 @@ public class TraitsServicesImpl implements TraitsServices {
 
 			Traits trait = traitsDao.findById(traitId);
 			if (trait.getTraitTypes().equals("SINGLE_CATEGORICAL")) {
-				if (traitsValueList != null) {
+				if (traitsValueList != null && !traitsValueList.isEmpty()) {
 					Long value = traitsValueList.get(0);
 					traitsValueList.clear();
 					traitsValueList.add(value);
 				}
-				if (valueString != null) {
+				if (valueString != null && !valueString.isEmpty()) {
 					String value = valueString.get(0);
 					valueString.clear();
 					valueString.add(value);
@@ -457,8 +457,9 @@ public class TraitsServicesImpl implements TraitsServices {
 			if (traitsValueList != null) {
 				for (Long newValue : traitsValueList) {
 					if (!(previousValueId.contains(newValue)) && validValueId.contains(newValue)) {
-						Facts fact = new Facts(null, 0L, attribution, userId, false, 822L, objectId, null, traitId,
-								newValue, null, objectType, null, null, null, null);
+						Facts fact = new Facts(null, 0L, attribution, userId, false, 822L, objectId,
+								factsUpdateData.getPageTaxonId(), traitId, newValue, null, objectType, null, null, null,
+								null);
 
 						String value = traitsValueDao.findById(fact.getTraitValueId()).getValue();
 						String description = trait.getName() + ":" + value;
