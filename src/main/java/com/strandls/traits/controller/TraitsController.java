@@ -86,7 +86,7 @@ public class TraitsController {
 
 		try {
 			Long objId = Long.parseLong(objectId);
-			List<FactValuePair> facts = services.getFacts(objectType, objId);
+			List<FactValuePair> facts = services.getFacts(objectType, objId, null);
 			return Response.status(Status.OK).entity(facts).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();

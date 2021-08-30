@@ -28,7 +28,7 @@ public class LogActivities {
 	@Inject
 	private Headers headers;
 
-	public void LogActivity(String authToken, String activityDescription, Long rootObjectId, Long subRootObjectId,
+	public void logActivity(String authToken, String activityDescription, Long rootObjectId, Long subRootObjectId,
 			String rootObjectType, Long activityId, String activityType, MailData mailData) {
 
 		try {

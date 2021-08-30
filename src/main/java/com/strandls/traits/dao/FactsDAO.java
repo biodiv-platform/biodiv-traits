@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
 
 import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
@@ -93,12 +93,16 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<FactValuePair> getTraitValuePair(String objectType, Long objectId) {
+	public List<FactValuePair> getTraitValuePair(String objectType, Long objectId, Long traitId) {
 
 		String qry = "select t.id, t.name , v.id, v.value, t.traitTypes, t.isParticipatory, f.value, f.toValue, f.fromDate, f.toDate from Facts f "
 				+ "left join Traits t on f.traitInstanceId = t.id "
 				+ "left join TraitsValue v on f.traitValueId = v.id "
 				+ "where f.objectId = :id and f.objectType = :type";
+
+		if (traitId != null)
+			qry = qry + " and f.traitInstanceId = :traitId";
+
 		Session session = sessionFactory.openSession();
 		List<FactValuePair> fact = null;
 
@@ -106,6 +110,8 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 			Query<Object[]> query = session.createQuery(qry);
 			query.setParameter("id", objectId);
 			query.setParameter("type", objectType);
+			if (traitId != null)
+				query.setParameter("traitId", traitId);
 
 			List<Object[]> resultList = new ArrayList<Object[]>();
 			resultList = query.getResultList();
@@ -181,12 +187,13 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Facts> fetchByValueList(String valueList) {
-		String qry = "from Facts where traitValueId in (" + valueList + ")";
+	public List<Facts> fetchByValueList(List<Integer> valueList) {
+		String qry = "from Facts where traitValueId in :valueList";
 		Session session = sessionFactory.openSession();
 		List<Facts> result = null;
 		try {
 			Query<Facts> query = session.createQuery(qry);
+			query.setParameter("valueList", valueList);
 			result = query.getResultList();
 		} catch (Exception e) {
 			logger.error(e.getMessage());

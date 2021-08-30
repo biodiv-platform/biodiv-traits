@@ -20,7 +20,7 @@ import com.strandls.traits.pojo.TraitsValuePair;
  */
 public interface TraitsServices {
 
-	public List<FactValuePair> getFacts(String objectType, Long objectId);
+	public List<FactValuePair> getFacts(String objectType, Long objectId, Long traitId);
 
 	public FactValuePair getFactIbp(Long id);
 

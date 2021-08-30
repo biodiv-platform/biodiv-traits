@@ -7,11 +7,10 @@
 	<artifactId>traits-api</artifactId>
 	<version>1.0.0</version>
 	<packaging>war</packaging>
-	<name>biodiv-traits-api</name>
+	<name>biodiv-traits</name>
 	<url>https://github.com/strandls/biodiv-traits</url>
 
 	<properties>
-
 		<!-- Plugins property -->
 		<maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
 		<maven-dependency-plugin.version>3.1.1</maven-dependency-plugin.version>
@@ -27,6 +26,11 @@
 		<srcDir>src/main/webapp</srcDir>
 		<base-path>/traits-api/api</base-path>
 		<location>com.strandls.traits</location>
+
+		<!-- Sonar Cloud -->
+		<sonar.projectKey>strandls_biodiv-traits</sonar.projectKey>
+		<sonar.organization>strandls</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
 
 	<distributionManagement>
