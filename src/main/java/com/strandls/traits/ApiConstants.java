@@ -9,6 +9,13 @@ package com.strandls.traits;
  */
 public class ApiConstants {
 
+	/**
+	 * 
+	 */
+	private ApiConstants() {
+		super();
+	}
+
 	// versioning
 	public static final String V1 = "/v1";
 

@@ -187,12 +187,13 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Facts> fetchByValueList(String valueList) {
-		String qry = "from Facts where traitValueId in (" + valueList + ")";
+	public List<Facts> fetchByValueList(List<Integer> valueList) {
+		String qry = "from Facts where traitValueId in :valueList";
 		Session session = sessionFactory.openSession();
 		List<Facts> result = null;
 		try {
 			Query<Facts> query = session.createQuery(qry);
+			query.setParameter("valueList", valueList);
 			result = query.getResultList();
 		} catch (Exception e) {
 			logger.error(e.getMessage());
