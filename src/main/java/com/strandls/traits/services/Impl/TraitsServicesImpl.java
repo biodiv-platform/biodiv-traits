@@ -522,10 +522,10 @@ public class TraitsServicesImpl implements TraitsServices {
 	@Override
 	public List<Long> fetchTaxonIdByValueId(String valueList) {
 
-		List<Integer> valList = new ArrayList<Integer>();
+		List<Long> valList = new ArrayList<Long>();
 
 		for (String value : valueList.split(",")) {
-			valList.add(Integer.parseInt(value));
+			valList.add(Long.parseLong(value));
 		}
 
 		List<Facts> factsResult = factsDao.fetchByValueList(valList);

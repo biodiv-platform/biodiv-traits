@@ -187,7 +187,7 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Facts> fetchByValueList(List<Integer> valueList) {
+	public List<Facts> fetchByValueList(List<Long> valueList) {
 		String qry = "from Facts where traitValueId in :valueList";
 		Session session = sessionFactory.openSession();
 		List<Facts> result = null;
