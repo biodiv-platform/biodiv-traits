@@ -27,7 +27,6 @@ public class Facts implements Serializable {
 	 */
 	private static final long serialVersionUID = 1023668982266565625L;
 	private Long id;
-	private Long version;
 	private String attribution;
 	private Long contributorId;
 	private Boolean isDeleted;
@@ -41,7 +40,6 @@ public class Facts implements Serializable {
 	private String toValue;
 	private Date fromDate;
 	private Date toDate;
-	private Long dataTableId;
 
 	/**
 	 * 
@@ -52,7 +50,6 @@ public class Facts implements Serializable {
 
 	/**
 	 * @param id
-	 * @param version
 	 * @param attribution
 	 * @param contributorId
 	 * @param isDeleted
@@ -66,14 +63,12 @@ public class Facts implements Serializable {
 	 * @param toValue
 	 * @param fromDate
 	 * @param toDate
-	 * @param dataTableId
 	 */
-	public Facts(Long id, Long version, String attribution, Long contributorId, Boolean isDeleted, Long licenseId,
-			Long objectId, Long pageTaxonId, Long traitInstanceId, Long traitValueId, String value, String objectType,
-			String toValue, Date fromDate, Date toDate, Long dataTableId) {
+	public Facts(Long id, String attribution, Long contributorId, Boolean isDeleted, Long licenseId, Long objectId,
+			Long pageTaxonId, Long traitInstanceId, Long traitValueId, String value, String objectType, String toValue,
+			Date fromDate, Date toDate) {
 		super();
 		this.id = id;
-		this.version = version;
 		this.attribution = attribution;
 		this.contributorId = contributorId;
 		this.isDeleted = isDeleted;
@@ -87,7 +82,6 @@ public class Facts implements Serializable {
 		this.toValue = toValue;
 		this.fromDate = fromDate;
 		this.toDate = toDate;
-		this.dataTableId = dataTableId;
 	}
 
 	@Id
@@ -99,15 +93,6 @@ public class Facts implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	@Column(name = "version")
-	public Long getVersion() {
-		return version;
-	}
-
-	public void setVersion(Long version) {
-		this.version = version;
 	}
 
 	@Column(name = "attribution")
@@ -225,15 +210,6 @@ public class Facts implements Serializable {
 
 	public void setToDate(Date toDate) {
 		this.toDate = toDate;
-	}
-
-	@Column(name = "data_table_id")
-	public Long getDataTableId() {
-		return dataTableId;
-	}
-
-	public void setDataTableId(Long dataTableId) {
-		this.dataTableId = dataTableId;
 	}
 
 }
