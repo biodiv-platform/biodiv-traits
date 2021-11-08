@@ -280,9 +280,9 @@ public class TraitsServicesImpl implements TraitsServices {
 						String attribution = userName;
 						if (objectType.equalsIgnoreCase(OBJECTTYPE.SPECIES.getValue()))
 							attribution = traits.getSource();
-						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
+						Facts facts = new Facts(null, attribution, userId, false, defaultLicenseId, objectId,
 								factsCreateData.getPageTaxonId(), entry.getKey(), values.getId(), null, objectType,
-								null, null, null, null);
+								null, null, null);
 						String description = traits.getName() + ":" + values.getValue();
 
 						saveUpdateFacts(request, objectType, objectId, facts, description,
@@ -301,9 +301,9 @@ public class TraitsServicesImpl implements TraitsServices {
 
 				if (traits.getDataType().equalsIgnoreCase(DATATYPE.COLOR.getValue())) {
 					for (String color : entry.getValue()) {
-						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
+						Facts facts = new Facts(null, attribution, userId, false, defaultLicenseId, objectId,
 								factsCreateData.getPageTaxonId(), entry.getKey(), null, color, objectType, null, null,
-								null, null);
+								null);
 						String description = traits.getName() + ":" + color;
 
 						saveUpdateFacts(request, objectType, objectId, facts, description,
@@ -313,9 +313,9 @@ public class TraitsServicesImpl implements TraitsServices {
 				} else if (traits.getDataType().equalsIgnoreCase(DATATYPE.NUMERIC.getValue())) {
 					for (String range : entry.getValue()) {
 						String[] value = range.split(":");
-						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
+						Facts facts = new Facts(null, attribution, userId, false, defaultLicenseId, objectId,
 								factsCreateData.getPageTaxonId(), entry.getKey(), null, value[0], objectType, value[1],
-								null, null, null);
+								null, null);
 						String description = traits.getName() + ":" + range;
 
 						saveUpdateFacts(request, objectType, objectId, facts, description,
@@ -331,9 +331,9 @@ public class TraitsServicesImpl implements TraitsServices {
 						Date fromDate = sdf.parse(value[0]);
 						Date toDate = sdf.parse(value[1]);
 
-						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
+						Facts facts = new Facts(null, attribution, userId, false, defaultLicenseId, objectId,
 								factsCreateData.getPageTaxonId(), entry.getKey(), null, null, objectType, null,
-								fromDate, toDate, null);
+								fromDate, toDate);
 
 						String description = traits.getName() + ":" + date;
 
@@ -459,8 +459,8 @@ public class TraitsServicesImpl implements TraitsServices {
 				for (Long newValue : traitsValueList) {
 					if (!(previousValueId.contains(newValue)) && validValueId.contains(newValue)) {
 
-						Facts fact = new Facts(null, 0L, attribution, userId, false, 822L, objectId,
-								factsUpdateData.getPageTaxonId(), traitId, newValue, null, objectType, null, null, null,
+						Facts fact = new Facts(null, attribution, userId, false, 822L, objectId,
+								factsUpdateData.getPageTaxonId(), traitId, newValue, null, objectType, null, null,
 								null);
 
 						String value = traitsValueDao.findById(fact.getTraitValueId()).getValue();
@@ -474,9 +474,9 @@ public class TraitsServicesImpl implements TraitsServices {
 			} else if (valueString != null && !valueString.isEmpty()) {
 				for (String value : valueString) {
 					if (trait.getDataType().equalsIgnoreCase(DATATYPE.COLOR.getValue())) {
-						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
+						Facts facts = new Facts(null, attribution, userId, false, defaultLicenseId, objectId,
 								factsUpdateData.getPageTaxonId(), traitId, null, value.trim(), objectType, null, null,
-								null, null);
+								null);
 						String description = trait.getName() + ":" + value;
 
 						saveUpdateFacts(request, objectType, objectId, facts, description, activityType,
@@ -485,9 +485,9 @@ public class TraitsServicesImpl implements TraitsServices {
 					} else if (trait.getDataType().equalsIgnoreCase(DATATYPE.NUMERIC.getValue())) {
 
 						String[] values = value.split(":");
-						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
+						Facts facts = new Facts(null, attribution, userId, false, defaultLicenseId, objectId,
 								factsUpdateData.getPageTaxonId(), traitId, null, values[0].trim(), objectType,
-								values[1].trim(), null, null, null);
+								values[1].trim(), null, null);
 						String description = trait.getName() + ":" + value;
 
 						saveUpdateFacts(request, objectType, objectId, facts, description, activityType,
@@ -500,9 +500,9 @@ public class TraitsServicesImpl implements TraitsServices {
 						Date fromDate = sdf.parse(values[0].trim());
 						Date toDate = sdf.parse(values[1].trim());
 
-						Facts facts = new Facts(null, 0L, attribution, userId, false, defaultLicenseId, objectId,
+						Facts facts = new Facts(null, attribution, userId, false, defaultLicenseId, objectId,
 								factsUpdateData.getPageTaxonId(), traitId, null, null, objectType, null, fromDate,
-								toDate, null);
+								toDate);
 
 						String description = trait.getName() + ":" + value;
 
