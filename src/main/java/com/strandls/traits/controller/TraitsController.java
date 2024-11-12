@@ -4,10 +4,12 @@
 package com.strandls.traits.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -26,6 +28,7 @@ import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
 import com.strandls.traits.pojo.FactsCreateData;
 import com.strandls.traits.pojo.FactsUpdateData;
+import com.strandls.traits.pojo.Traits;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.pojo.TraitsValuePair;
 import com.strandls.traits.services.TraitsServices;
@@ -67,6 +70,28 @@ public class TraitsController {
 	public Response getAllTraits() {
 		try {
 			List<TraitsValuePair> result = services.getAllObservationTraits();
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+	
+	@POST
+	@Path(ApiConstants.TRAIT + ApiConstants.CREATE)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Fetch all the Traits", notes = "Returns all the IBP traits", response = TraitsValuePair.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to fetch all the traits", response = String.class) })
+
+	public Response createTrait(@QueryParam("dataType") String dataType,
+			@QueryParam("description") String description, 
+			@QueryParam("name") String name, @QueryParam("traitTypes") String traitTypes,
+			@QueryParam("showInObservation") Boolean showInObservation,@QueryParam("isParticipatory") Boolean isParticipatory,
+			@QueryParam("values") String values) {
+		try {
+			//List<TraitsValuePair> result = services.getAllObservationTraits();
+			String result = services.createTraits(dataType, description, Long.parseLong("39"), name, traitTypes, null, showInObservation, isParticipatory,values);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -155,6 +180,25 @@ public class TraitsController {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
 
+	}
+	
+	@GET
+	@Path(ApiConstants.TRAIT + "/{traitId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find facts by taxonId", notes = "Returns list of facts for a particular TaxonId", response = Facts.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "traits not found for TaxonId", response = String.class) })
+
+	public Response getTraitBytraitId(@PathParam("traitId") String trtId) {
+		try {
+			Long traitId = Long.parseLong(trtId);
+			Map<String, Object> result = services.fetchByTraitId(traitId);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
 	}
 
 	@GET

@@ -4,9 +4,12 @@
 package com.strandls.traits.services.Impl;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -257,6 +260,42 @@ public class TraitsServicesImpl implements TraitsServices {
 		return traitValuePair;
 
 	}
+	
+	@Override
+	public String createTraits (String dataType, String description, Long fieldId, String name, String traitTypes,
+			String units, Boolean showInObservation, Boolean isParticipatory, String values) {
+		Traits traits = new Traits();
+		traits.setId(null);
+		traits.setCreatedOn(LocalDateTime.now());
+		traits.setDataType(dataType);
+		traits.setDescription(description);
+		traits.setFieldId(fieldId);
+		traits.setName(name);
+		traits.setTraitTypes(traitTypes);
+		traits.setLastRevised(LocalDateTime.now());
+		traits.setUnits(units);
+		traits.setIsNotObservationTraits(!showInObservation);
+		traits.setShowInObservation(showInObservation);
+		traits.setIsParticipatory(isParticipatory);
+		traits.setIsDeleted(false);
+		traits.setSource("IBP");
+		traitsDao.save(traits);
+		String[] array = values.split("\\|");
+		List<String> list = Arrays.asList(array);
+		for (String value : list) {
+			String[] parts = value.split(":", 2);
+			TraitsValue traitValue = new TraitsValue();
+			traitValue.setTraitInstanceId(traits.getId());
+			traitValue.setId(null);
+			traitValue.setDescription(parts[0]);
+			traitValue.setSource("IBP");
+			traitValue.setIcon(null);
+			traitValue.setIsDeleted(false);
+			traitValue.setValue(parts[1]);
+			traitsValueDao.save(traitValue);
+		}
+		return traits.getId().toString();
+	}
 
 	@Override
 	public List<FactValuePair> createFacts(HttpServletRequest request, String objectType, Long objectId,
@@ -366,6 +405,16 @@ public class TraitsServicesImpl implements TraitsServices {
 				logActivity.logSpeciesActivity(request.getHeader(HttpHeaders.AUTHORIZATION), description, objectId,
 						objectId, "species", result.getId(), activityType, mailData);
 		}
+	}
+	
+	@Override
+	public Map<String, Object> fetchByTraitId(Long traitId) {
+		Traits traitDetails = traitsDao.findById(traitId);
+		List<TraitsValue> traitValuesList = traitsValueDao.findTraitsValue(traitId);
+		Map<String,Object> details = new HashMap();
+		details.put("traits", traitDetails);
+		details.put("values", traitValuesList);
+		return details;
 	}
 
 	@Override

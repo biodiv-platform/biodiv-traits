@@ -28,6 +28,8 @@ public class TraitsValue implements Serializable {
 	private String value;
 	private String icon;
 	private Long traitInstanceId;
+	private String description;
+	private String source;
 	private Boolean isDeleted;
 
 	@Id
@@ -48,6 +50,24 @@ public class TraitsValue implements Serializable {
 
 	public void setValue(String value) {
 		this.value = value;
+	}
+	
+	@Column(name = "description")
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	@Column(name = "source")
+	public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
 	}
 
 	@Column(name = "icon")

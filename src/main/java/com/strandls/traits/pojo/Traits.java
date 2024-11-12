@@ -4,6 +4,7 @@
 package com.strandls.traits.pojo;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,6 +25,8 @@ public class Traits implements Serializable {
 	 */
 	private static final long serialVersionUID = -7750012729432714454L;
 	private Long id;
+	private LocalDateTime createdOn;
+	private LocalDateTime lastRevised;
 	private String dataType;
 	private String description;
 	private Long fieldId;
@@ -45,6 +48,24 @@ public class Traits implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+	
+	@Column(name="created_on")
+	public LocalDateTime getCreatedOn() {
+		return createdOn;
+	}
+	
+	public void setCreatedOn(LocalDateTime createdOn) {
+		this.createdOn = createdOn;
+	}
+	
+	@Column(name="last_revised")
+	public LocalDateTime getLastRevised() {
+		return lastRevised;
+	}
+	
+	public void setLastRevised(LocalDateTime lastRevised) {
+		this.lastRevised = lastRevised;
 	}
 
 	@Column(name = "data_types")
