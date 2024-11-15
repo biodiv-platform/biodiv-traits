@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.QueryParam;
 
 import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
@@ -29,13 +30,15 @@ public interface TraitsServices {
 	public List<TraitsValuePair> getAllObservationTraits();
 
 	public List<TraitsValuePair> getObservationTraitList(Long speciesId);
-	
-	public String createTraits (String dataType, String description, Long fieldId, String name, String traitTypes,
-			String units, Boolean showInObservation, Boolean isParticipatory, String values);
+
+	public String createTraits(String dataType, String description, Long fieldId, String name, String traitTypes,
+			String units, Boolean showInObservation, Boolean isParticipatory, String values, String taxonIds);
+
+	public String updateTraits (String description,Long id,String name,String traitTypes,Boolean showInObservation,Boolean isParticipatory);
 
 	public List<FactValuePair> createFacts(HttpServletRequest request, String objectType, Long objectId,
 			FactsCreateData factsCreateData);
-	
+
 	public Map<String, Object> fetchByTraitId(Long traitId);
 
 	public List<Facts> fetchByTaxonId(Long taxonId);

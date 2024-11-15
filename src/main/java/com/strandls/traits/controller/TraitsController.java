@@ -88,10 +88,29 @@ public class TraitsController {
 			@QueryParam("description") String description, 
 			@QueryParam("name") String name, @QueryParam("traitTypes") String traitTypes,
 			@QueryParam("showInObservation") Boolean showInObservation,@QueryParam("isParticipatory") Boolean isParticipatory,
-			@QueryParam("values") String values) {
+			@QueryParam("values") String values, @QueryParam("taxonIds") String taxonIds) {
 		try {
-			//List<TraitsValuePair> result = services.getAllObservationTraits();
-			String result = services.createTraits(dataType, description, Long.parseLong("39"), name, traitTypes, null, showInObservation, isParticipatory,values);
+			String result = services.createTraits(dataType, description, Long.parseLong("39"), name, traitTypes, null, showInObservation, isParticipatory,values,taxonIds);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+	
+	@POST
+	@Path(ApiConstants.TRAIT + ApiConstants.UPDATE)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Fetch all the Traits", notes = "Returns all the IBP traits", response = TraitsValuePair.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to fetch all the traits", response = String.class) })
+
+	public Response updateTrait(
+			@QueryParam("description") String description, @QueryParam("id") Long id,
+			@QueryParam("name") String name, @QueryParam("traitTypes") String traitTypes,
+			@QueryParam("showInObservation") Boolean showInObservation,@QueryParam("isParticipatory") Boolean isParticipatory) {
+		try {
+			String result = services.updateTraits(description, id, name, traitTypes, showInObservation, isParticipatory);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();

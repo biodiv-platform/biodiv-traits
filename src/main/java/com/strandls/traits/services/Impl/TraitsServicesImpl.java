@@ -262,8 +262,22 @@ public class TraitsServicesImpl implements TraitsServices {
 	}
 	
 	@Override
+	public String updateTraits (String description,Long id,String name,String traitTypes,Boolean showInObservation,Boolean isParticipatory) {
+		Traits trait = traitsDao.findById(id);
+		trait.setDescription(description);
+		trait.setName(name);
+		trait.setTraitTypes(traitTypes);
+		trait.setShowInObservation(showInObservation);
+		trait.setIsNotObservationTraits(!showInObservation);
+		trait.setIsParticipatory(isParticipatory);
+		trait.setLastRevised(LocalDateTime.now());
+		traitsDao.update(trait);
+		return trait.getId().toString();
+	}
+	
+	@Override
 	public String createTraits (String dataType, String description, Long fieldId, String name, String traitTypes,
-			String units, Boolean showInObservation, Boolean isParticipatory, String values) {
+			String units, Boolean showInObservation, Boolean isParticipatory, String values, String taxonIds) {
 		Traits traits = new Traits();
 		traits.setId(null);
 		traits.setCreatedOn(LocalDateTime.now());
@@ -280,19 +294,35 @@ public class TraitsServicesImpl implements TraitsServices {
 		traits.setIsDeleted(false);
 		traits.setSource("IBP");
 		traitsDao.save(traits);
+		if(values != null && !values.isEmpty()) {
 		String[] array = values.split("\\|");
 		List<String> list = Arrays.asList(array);
 		for (String value : list) {
-			String[] parts = value.split(":", 2);
+			String[] parts = value.split(":");
 			TraitsValue traitValue = new TraitsValue();
 			traitValue.setTraitInstanceId(traits.getId());
 			traitValue.setId(null);
 			traitValue.setDescription(parts[0]);
 			traitValue.setSource("IBP");
-			traitValue.setIcon(null);
+			if(parts.length==3) {
+				traitValue.setIcon(parts[2]);
+			} else {
+				traitValue.setIcon(null);
+			}
 			traitValue.setIsDeleted(false);
 			traitValue.setValue(parts[1]);
 			traitsValueDao.save(traitValue);
+		}
+		}
+		if(taxonIds != null && !taxonIds.isEmpty()) {
+			String[] array = taxonIds.split("\\|");
+			List<String> list = Arrays.asList(array);
+			for (String value : list) {
+				TraitTaxonomyDefinition taxonId = new TraitTaxonomyDefinition();
+				taxonId.setTraitTaxonId(traits.getId());
+				taxonId.setTaxonomyDefifintionId(Long.parseLong(value));
+				traitTaxonomyDef.save(taxonId);
+			}
 		}
 		return traits.getId().toString();
 	}
