@@ -277,7 +277,7 @@ public class TraitsServicesImpl implements TraitsServices {
 	
 	@Override
 	public String createTraits (String dataType, String description, Long fieldId, String name, String traitTypes,
-			String units, Boolean showInObservation, Boolean isParticipatory, String values, String taxonIds) {
+			String units, Boolean showInObservation, Boolean isParticipatory, String values, String taxonIds, String icon) {
 		Traits traits = new Traits();
 		traits.setId(null);
 		traits.setCreatedOn(LocalDateTime.now());
@@ -293,6 +293,7 @@ public class TraitsServicesImpl implements TraitsServices {
 		traits.setIsParticipatory(isParticipatory);
 		traits.setIsDeleted(false);
 		traits.setSource("IBP");
+		traits.setIcon(icon);
 		traitsDao.save(traits);
 		if(values != null && !values.isEmpty()) {
 		String[] array = values.split("\\|");

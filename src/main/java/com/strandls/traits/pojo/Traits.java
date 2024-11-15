@@ -38,6 +38,7 @@ public class Traits implements Serializable {
 	private Boolean isParticipatory;
 	private Boolean isDeleted;
 	private String source;
+	private String icon;
 
 	@Id
 	@GeneratedValue
@@ -147,6 +148,15 @@ public class Traits implements Serializable {
 
 	public void setSource(String source) {
 		this.source = source;
+	}
+	
+	@Column(name = "icon")
+	public String getIcon() {
+		return icon;
+	}
+
+	public void setIcon(String icon) {
+		this.icon = icon;
 	}
 
 	@Column(name = "units")

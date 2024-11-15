@@ -32,7 +32,7 @@ public interface TraitsServices {
 	public List<TraitsValuePair> getObservationTraitList(Long speciesId);
 
 	public String createTraits(String dataType, String description, Long fieldId, String name, String traitTypes,
-			String units, Boolean showInObservation, Boolean isParticipatory, String values, String taxonIds);
+			String units, Boolean showInObservation, Boolean isParticipatory, String values, String taxonIds, String icon);
 
 	public String updateTraits (String description,Long id,String name,String traitTypes,Boolean showInObservation,Boolean isParticipatory);
 

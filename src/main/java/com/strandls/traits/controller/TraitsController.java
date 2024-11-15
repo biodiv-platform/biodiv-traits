@@ -88,9 +88,9 @@ public class TraitsController {
 			@QueryParam("description") String description, 
 			@QueryParam("name") String name, @QueryParam("traitTypes") String traitTypes,
 			@QueryParam("showInObservation") Boolean showInObservation,@QueryParam("isParticipatory") Boolean isParticipatory,
-			@QueryParam("values") String values, @QueryParam("taxonIds") String taxonIds) {
+			@QueryParam("values") String values, @QueryParam("taxonIds") String taxonIds, @QueryParam("icon") String icon) {
 		try {
-			String result = services.createTraits(dataType, description, Long.parseLong("39"), name, traitTypes, null, showInObservation, isParticipatory,values,taxonIds);
+			String result = services.createTraits(dataType, description, Long.parseLong("39"), name, traitTypes, null, showInObservation, isParticipatory,values,taxonIds,icon);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
