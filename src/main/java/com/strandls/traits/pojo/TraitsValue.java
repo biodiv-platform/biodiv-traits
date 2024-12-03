@@ -31,6 +31,7 @@ public class TraitsValue implements Serializable {
 	private String description;
 	private String source;
 	private Boolean isDeleted;
+	private Long displayOrder;
 
 	@Id
 	@GeneratedValue
@@ -51,7 +52,16 @@ public class TraitsValue implements Serializable {
 	public void setValue(String value) {
 		this.value = value;
 	}
-	
+
+	@Column(name = "display_order", columnDefinition = "BIGINT")
+	public Long getDisplayOrder() {
+		return displayOrder;
+	}
+
+	public void setDisplayOrder(Long displayOrder) {
+		this.displayOrder = displayOrder;
+	}
+
 	@Column(name = "description")
 	public String getDescription() {
 		return description;

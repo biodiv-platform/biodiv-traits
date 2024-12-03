@@ -260,9 +260,10 @@ public class TraitsServicesImpl implements TraitsServices {
 		return traitValuePair;
 
 	}
-	
+
 	@Override
-	public String updateTraits (String description,Long id,String name,String traitTypes,Boolean showInObservation,Boolean isParticipatory) {
+	public String updateTraits(String description, Long id, String name, String traitTypes, Boolean showInObservation,
+			Boolean isParticipatory, String source, String traitValues) {
 		Traits trait = traitsDao.findById(id);
 		trait.setDescription(description);
 		trait.setName(name);
@@ -270,14 +271,47 @@ public class TraitsServicesImpl implements TraitsServices {
 		trait.setShowInObservation(showInObservation);
 		trait.setIsNotObservationTraits(!showInObservation);
 		trait.setIsParticipatory(isParticipatory);
+		trait.setSource(source);
 		trait.setLastRevised(LocalDateTime.now());
 		traitsDao.update(trait);
+		if (traitValues != null && !traitValues.isEmpty()) {
+			String[] array = traitValues.split("\\|");
+			List<String> list = Arrays.asList(array);
+			Long index = (long) 1;
+			for (String value : list) {
+				String[] parts = value.split(":");
+				if (parts[0] != null && !parts[0].isEmpty()) {
+					TraitsValue traitValue = traitsValueDao.findById(Long.parseLong(parts[0]));
+					traitValue.setValue(parts[2]);
+					traitValue.setDisplayOrder(index);
+					traitValue.setDescription(parts[1]);
+					traitsValueDao.update(traitValue);
+				} else {
+					TraitsValue traitValue = new TraitsValue();
+					traitValue.setTraitInstanceId(id);
+					traitValue.setId(null);
+					traitValue.setDescription(parts[1]);
+					traitValue.setSource(source);
+					traitValue.setDisplayOrder(index);
+					if (parts.length == 4) {
+						traitValue.setIcon(parts[3]);
+					} else {
+						traitValue.setIcon(null);
+					}
+					traitValue.setIsDeleted(false);
+					traitValue.setValue(parts[2]);
+					traitsValueDao.save(traitValue);
+				}
+				index = index + 1;
+			}
+		}
 		return trait.getId().toString();
 	}
-	
+
 	@Override
-	public String createTraits (String dataType, String description, Long fieldId, String name, String traitTypes,
-			String units, Boolean showInObservation, Boolean isParticipatory, String values, String taxonIds, String icon) {
+	public String createTraits(String dataType, String description, Long fieldId, String source, String name,
+			String traitTypes, String units, Boolean showInObservation, Boolean isParticipatory, String values,
+			String taxonIds, String icon, String min, String max) {
 		Traits traits = new Traits();
 		traits.setId(null);
 		traits.setCreatedOn(LocalDateTime.now());
@@ -292,30 +326,55 @@ public class TraitsServicesImpl implements TraitsServices {
 		traits.setShowInObservation(showInObservation);
 		traits.setIsParticipatory(isParticipatory);
 		traits.setIsDeleted(false);
-		traits.setSource("IBP");
+		traits.setSource(source);
 		traits.setIcon(icon);
 		traitsDao.save(traits);
-		if(values != null && !values.isEmpty()) {
-		String[] array = values.split("\\|");
-		List<String> list = Arrays.asList(array);
-		for (String value : list) {
-			String[] parts = value.split(":");
+		if (values != null && !values.isEmpty()) {
+			String[] array = values.split("\\|");
+			List<String> list = Arrays.asList(array);
+			Long index = (long) 1;
+			for (String value : list) {
+				String[] parts = value.split(":");
+				TraitsValue traitValue = new TraitsValue();
+				traitValue.setTraitInstanceId(traits.getId());
+				traitValue.setId(null);
+				traitValue.setDescription(parts[0]);
+				traitValue.setSource(source);
+				if (parts.length == 3) {
+					traitValue.setIcon(parts[2]);
+				} else {
+					traitValue.setIcon(null);
+				}
+				traitValue.setIsDeleted(false);
+				traitValue.setValue(parts[1]);
+				traitValue.setDisplayOrder(index);
+				traitsValueDao.save(traitValue);
+				index = index + 1;
+			}
+		}
+		if (min != null && !min.isEmpty()) {
 			TraitsValue traitValue = new TraitsValue();
 			traitValue.setTraitInstanceId(traits.getId());
 			traitValue.setId(null);
-			traitValue.setDescription(parts[0]);
-			traitValue.setSource("IBP");
-			if(parts.length==3) {
-				traitValue.setIcon(parts[2]);
-			} else {
-				traitValue.setIcon(null);
-			}
+			traitValue.setDescription("Min Value");
+			traitValue.setSource(source);
+			traitValue.setIcon(null);
 			traitValue.setIsDeleted(false);
-			traitValue.setValue(parts[1]);
+			traitValue.setValue(min);
 			traitsValueDao.save(traitValue);
 		}
+		if (max != null && !max.isEmpty()) {
+			TraitsValue traitValue = new TraitsValue();
+			traitValue.setTraitInstanceId(traits.getId());
+			traitValue.setId(null);
+			traitValue.setDescription("Max Value");
+			traitValue.setSource(source);
+			traitValue.setIcon(null);
+			traitValue.setIsDeleted(false);
+			traitValue.setValue(max);
+			traitsValueDao.save(traitValue);
 		}
-		if(taxonIds != null && !taxonIds.isEmpty()) {
+		if (taxonIds != null && !taxonIds.isEmpty()) {
 			String[] array = taxonIds.split("\\|");
 			List<String> list = Arrays.asList(array);
 			for (String value : list) {
@@ -437,12 +496,12 @@ public class TraitsServicesImpl implements TraitsServices {
 						objectId, "species", result.getId(), activityType, mailData);
 		}
 	}
-	
+
 	@Override
 	public Map<String, Object> fetchByTraitId(Long traitId) {
 		Traits traitDetails = traitsDao.findById(traitId);
 		List<TraitsValue> traitValuesList = traitsValueDao.findTraitsValue(traitId);
-		Map<String,Object> details = new HashMap();
+		Map<String, Object> details = new HashMap();
 		details.put("traits", traitDetails);
 		details.put("values", traitValuesList);
 		return details;

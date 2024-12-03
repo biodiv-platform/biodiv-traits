@@ -75,7 +75,7 @@ public class TraitsController {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
-	
+
 	@POST
 	@Path(ApiConstants.TRAIT + ApiConstants.CREATE)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -84,19 +84,22 @@ public class TraitsController {
 	@ApiResponses(value = {
 			@ApiResponse(code = 400, message = "unable to fetch all the traits", response = String.class) })
 
-	public Response createTrait(@QueryParam("dataType") String dataType,
-			@QueryParam("description") String description, 
+	public Response createTrait(@QueryParam("dataType") String dataType, @QueryParam("description") String description,
 			@QueryParam("name") String name, @QueryParam("traitTypes") String traitTypes,
-			@QueryParam("showInObservation") Boolean showInObservation,@QueryParam("isParticipatory") Boolean isParticipatory,
-			@QueryParam("values") String values, @QueryParam("taxonIds") String taxonIds, @QueryParam("icon") String icon) {
+			@QueryParam("units") String units, @QueryParam("speciesField") String speciesField,
+			@QueryParam("source") String source, @QueryParam("showInObservation") Boolean showInObservation,
+			@QueryParam("isParticipatory") Boolean isParticipatory, @QueryParam("values") String values,
+			@QueryParam("taxonIds") String taxonIds, @QueryParam("icon") String icon, @QueryParam("min") String min,
+			@QueryParam("max") String max) {
 		try {
-			String result = services.createTraits(dataType, description, Long.parseLong("39"), name, traitTypes, null, showInObservation, isParticipatory,values,taxonIds,icon);
+			String result = services.createTraits(dataType, description, Long.parseLong(speciesField), source, name,
+					traitTypes, units, showInObservation, isParticipatory, values, taxonIds, icon, min, max);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
-	
+
 	@POST
 	@Path(ApiConstants.TRAIT + ApiConstants.UPDATE)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -105,12 +108,14 @@ public class TraitsController {
 	@ApiResponses(value = {
 			@ApiResponse(code = 400, message = "unable to fetch all the traits", response = String.class) })
 
-	public Response updateTrait(
-			@QueryParam("description") String description, @QueryParam("id") Long id,
+	public Response updateTrait(@QueryParam("description") String description, @QueryParam("id") Long id,
 			@QueryParam("name") String name, @QueryParam("traitTypes") String traitTypes,
-			@QueryParam("showInObservation") Boolean showInObservation,@QueryParam("isParticipatory") Boolean isParticipatory) {
+			@QueryParam("showInObservation") Boolean showInObservation,
+			@QueryParam("isParticipatory") Boolean isParticipatory, @QueryParam("source") String source,
+			@QueryParam("traitValues") String traitValues) {
 		try {
-			String result = services.updateTraits(description, id, name, traitTypes, showInObservation, isParticipatory);
+			String result = services.updateTraits(description, id, name, traitTypes, showInObservation, isParticipatory,
+					source, traitValues);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -200,7 +205,7 @@ public class TraitsController {
 		}
 
 	}
-	
+
 	@GET
 	@Path(ApiConstants.TRAIT + "/{traitId}")
 	@Consumes(MediaType.TEXT_PLAIN)
@@ -279,7 +284,7 @@ public class TraitsController {
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ValidateUser
-	
+
 	@ApiOperation(value = "Updates the Traits with Values", notes = "Returns the list of allTraitValue Pair", response = FactValuePair.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Unable to edit the Traits", response = String.class) })
 
