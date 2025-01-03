@@ -1,6 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.strandls.traits</groupId>
@@ -73,7 +75,8 @@
 			<version>1.7.13</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+		<!--
+		https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
@@ -85,7 +88,7 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.13</version>
 		</dependency>
-		
+
 		<!-- https://mvnrepository.com/artifact/javax.ws.rs/javax.ws.rs-api -->
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
@@ -93,14 +96,16 @@
 			<version>2.1.1</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.glassfish.jersey.core/jersey-server -->
+		<!--
+		https://mvnrepository.com/artifact/org.glassfish.jersey.core/jersey-server -->
 		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
 			<artifactId>jersey-server</artifactId>
 			<version>2.31</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.glassfish.jersey.containers/jersey-container-servlet-core -->
+		<!--
+		https://mvnrepository.com/artifact/org.glassfish.jersey.containers/jersey-container-servlet-core -->
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet-core</artifactId>
@@ -127,7 +132,8 @@
 			<version>4.2.3</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/com.google.inject.extensions/guice-servlet -->
+		<!--
+		https://mvnrepository.com/artifact/com.google.inject.extensions/guice-servlet -->
 		<dependency>
 			<groupId>com.google.inject.extensions</groupId>
 			<artifactId>guice-servlet</artifactId>
@@ -142,40 +148,42 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.glassfish.jersey.media/jersey-media-json-jackson -->
+		<!--
+		https://mvnrepository.com/artifact/org.glassfish.jersey.media/jersey-media-json-jackson -->
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-json-jackson</artifactId>
 			<version>2.31</version>
 		</dependency>
-		
-		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+
+		<!--
+		https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
 		<dependency>
-		    <groupId>com.fasterxml.jackson.core</groupId>
-		    <artifactId>jackson-core</artifactId>
-		    <version>2.11.0</version>
-		</dependency>
-				
-		<dependency>
-		    <groupId>com.sun.xml.bind</groupId>
-		    <artifactId>jaxb-core</artifactId>
-		    <version>2.3.0.1</version>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.11.0</version>
 		</dependency>
 
 		<dependency>
-		    <groupId>com.sun.xml.bind</groupId>
-		    <artifactId>jaxb-impl</artifactId>
-		    <version>2.3.1</version>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-core</artifactId>
+			<version>2.3.0.1</version>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-impl</artifactId>
+			<version>2.3.1</version>
+		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/io.swagger/swagger-annotations -->
 		<dependency>
-		    <groupId>io.swagger</groupId>
-		    <artifactId>swagger-annotations</artifactId>
-		    <version>1.6.1</version>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-annotations</artifactId>
+			<version>1.6.1</version>
 		</dependency>
-		
-		
+
+
 		<!-- https://mvnrepository.com/artifact/io.swagger/swagger-jersey2-jaxrs -->
 		<dependency>
 			<groupId>io.swagger</groupId>
@@ -189,7 +197,7 @@
 			<artifactId>hibernate-core</artifactId>
 			<version>5.4.24.Final</version>
 		</dependency>
-		
+
 		<!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-hikaricp -->
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -212,21 +220,27 @@
 		</dependency>
 
 		<dependency>
-		    <groupId>com.strandls.biodiv</groupId>
-		    <artifactId>authentication-utility</artifactId>
-		    <version>1.0.0</version>
-		</dependency>	
-		
-		<dependency>
-		    <groupId>com.strandls.biodiv</groupId>
-		    <artifactId>taxonomy-client</artifactId>
-		    <version>1.0.0</version>
+			<groupId>com.strandls.biodiv</groupId>
+			<artifactId>authentication-utility</artifactId>
+			<version>1.0.0</version>
 		</dependency>
-		
+
 		<dependency>
-		    <groupId>com.strandls.biodiv</groupId>
-		    <artifactId>activity-client</artifactId>
-		    <version>1.0.0</version>
+			<groupId>com.strandls.biodiv</groupId>
+			<artifactId>taxonomy-client</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.strandls.biodiv</groupId>
+			<artifactId>esmodule-client</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.strandls.biodiv</groupId>
+			<artifactId>activity-client</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 	</dependencies>
@@ -262,7 +276,8 @@
 									<version>${swagger-ui.version}</version>
 								</artifactItem>
 							</artifactItems>
-							<outputDirectory> ${project.build.directory}/swagger-ui</outputDirectory>
+							<outputDirectory>
+								${project.build.directory}/swagger-ui</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
@@ -274,7 +289,8 @@
 				<configuration>
 					<webResources combine.children="append">
 						<resource>
-							<directory>${project.build.directory}/swagger-ui/META-INF/resources/webjars/swagger-ui/${swagger-ui.version}</directory>
+							<directory>
+								${project.build.directory}/swagger-ui/META-INF/resources/webjars/swagger-ui/${swagger-ui.version}</directory>
 							<includes>
 								<include>**/*.*</include>
 							</includes>
@@ -287,7 +303,8 @@
 			</plugin>
 
 			<plugin>
-				<!-- Replace the OpenAPI specification example URL with the local one. -->
+				<!-- Replace the OpenAPI specification example URL with the
+				local one. -->
 				<groupId>com.google.code.maven-replacer-plugin</groupId>
 				<artifactId>replacer</artifactId>
 				<version>${replacer.version}</version>
@@ -300,7 +317,8 @@
 					</execution>
 				</executions>
 				<configuration>
-					<file>${project.build.directory}/swagger-ui/META-INF/resources/webjars/swagger-ui/${swagger-ui.version}/index.html</file>
+					<file>
+						${project.build.directory}/swagger-ui/META-INF/resources/webjars/swagger-ui/${swagger-ui.version}/index.html</file>
 					<replacements>
 						<replacement>
 							<token>https://petstore.swagger.io/v2/swagger.json</token>
@@ -360,7 +378,9 @@
 					<executable>java</executable>
 					<mainClass>org.openapitools.codegen.OpenAPIGenerator</mainClass>
 					<commandlineArgs>
-						generate -i ${project.basedir}/target/swagger.json -g java -o target/sdk --skip-validate-spec -c swagger-config.json
+						generate -i ${project.basedir}/target/swagger.json -g
+						java -o target/sdk --skip-validate-spec -c
+						swagger-config.json
 					</commandlineArgs>
 					<includeProjectDependencies>true</includeProjectDependencies>
 					<includePluginDependencies>true</includePluginDependencies>

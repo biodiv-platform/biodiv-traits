@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 
 import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
@@ -16,6 +18,8 @@ import com.strandls.traits.pojo.FactsUpdateData;
 import com.strandls.traits.pojo.Traits;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.pojo.TraitsValuePair;
+
+import io.swagger.annotations.ApiParam;
 
 /**
  * @author Abhishek Rudra
@@ -36,7 +40,7 @@ public interface TraitsServices {
 			String taxonIds, String icon, String min, String max);
 
 	public String updateTraits(String description, Long id, String name, String traitTypes, Boolean showInObservation,
-			Boolean isParticipatory, String source, String traitValues);
+			Boolean isParticipatory, String source, List<Map<String, Object>> list);
 
 	public List<FactValuePair> createFacts(HttpServletRequest request, String objectType, Long objectId,
 			FactsCreateData factsCreateData);
@@ -48,6 +52,9 @@ public interface TraitsServices {
 	public List<Long> fetchTaxonIdByValueId(String valueList);
 
 	public List<TraitsValue> fetchTraitsValue(Long traitId);
+
+	public String addNewTraits(HttpServletRequest request, String objectType, Long objectId,
+			Map<String, List> factsAddData);
 
 	public List<FactValuePair> updateTraits(HttpServletRequest request, String objectType, Long objectId, Long traitId,
 			FactsUpdateData factsUpdateData);

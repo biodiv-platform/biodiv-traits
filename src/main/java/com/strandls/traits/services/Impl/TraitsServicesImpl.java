@@ -3,6 +3,7 @@
  */
 package com.strandls.traits.services.Impl;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,10 +28,16 @@ import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.strandls.activity.pojo.MailData;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.taxonomy.controllers.SpeciesServicesApi;
 import com.strandls.taxonomy.controllers.TaxonomyTreeServicesApi;
+import com.strandls.esmodule.ApiException;
+import com.strandls.esmodule.controllers.EsServicesApi;
 import com.strandls.taxonomy.pojo.BreadCrumb;
 import com.strandls.traits.dao.FactsDAO;
 import com.strandls.traits.dao.TraitTaxonomyDefinitionDao;
@@ -75,6 +83,9 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Inject
 	private SpeciesServicesApi speciesService;
+
+	@Inject
+	private EsServicesApi esService;
 
 	@Inject
 	private TaxonomyTreeServicesApi taxonomyTreeService;
@@ -263,7 +274,7 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Override
 	public String updateTraits(String description, Long id, String name, String traitTypes, Boolean showInObservation,
-			Boolean isParticipatory, String source, String traitValues) {
+			Boolean isParticipatory, String source, List<Map<String, Object>> traitValues) {
 		Traits trait = traitsDao.findById(id);
 		trait.setDescription(description);
 		trait.setName(name);
@@ -272,35 +283,35 @@ public class TraitsServicesImpl implements TraitsServices {
 		trait.setIsNotObservationTraits(!showInObservation);
 		trait.setIsParticipatory(isParticipatory);
 		trait.setSource(source);
-		trait.setLastRevised(LocalDateTime.now());
+		trait.setLastRevised(new Date());
 		traitsDao.update(trait);
 		if (traitValues != null && !traitValues.isEmpty()) {
-			String[] array = traitValues.split("\\|");
-			List<String> list = Arrays.asList(array);
 			Long index = (long) 1;
-			for (String value : list) {
-				String[] parts = value.split(":");
-				if (parts[0] != null && !parts[0].isEmpty()) {
-					TraitsValue traitValue = traitsValueDao.findById(Long.parseLong(parts[0]));
-					traitValue.setValue(parts[2]);
+			for (Map<String, Object> value : traitValues) {
+				if (value.get("id") != null) {
+					TraitsValue traitValue = traitsValueDao.findById(Long.valueOf(value.get("id").toString()));
+					traitValue.setValue(value.get("value").toString());
 					traitValue.setDisplayOrder(index);
-					traitValue.setDescription(parts[1]);
+					traitValue.setSource(source);
+					traitValue.setDescription(value.get("description").toString());
+					if (value.get("icon") != null) {
+						traitValue.setIcon(value.get("icon").toString());
+					}
 					traitsValueDao.update(traitValue);
 				} else {
 					TraitsValue traitValue = new TraitsValue();
 					traitValue.setTraitInstanceId(id);
 					traitValue.setId(null);
-					traitValue.setDescription(parts[1]);
+					traitValue.setDescription(value.get("description").toString());
 					traitValue.setSource(source);
 					traitValue.setDisplayOrder(index);
-					if (parts.length == 4) {
-						traitValue.setIcon(parts[3]);
-					} else {
-						traitValue.setIcon(null);
+					if (value.get("icon") != null) {
+						traitValue.setIcon(value.get("icon").toString());
 					}
 					traitValue.setIsDeleted(false);
-					traitValue.setValue(parts[2]);
+					traitValue.setValue(value.get("value").toString());
 					traitsValueDao.save(traitValue);
+
 				}
 				index = index + 1;
 			}
@@ -314,13 +325,13 @@ public class TraitsServicesImpl implements TraitsServices {
 			String taxonIds, String icon, String min, String max) {
 		Traits traits = new Traits();
 		traits.setId(null);
-		traits.setCreatedOn(LocalDateTime.now());
+		traits.setCreatedOn(new Date());
 		traits.setDataType(dataType);
 		traits.setDescription(description);
 		traits.setFieldId(fieldId);
 		traits.setName(name);
 		traits.setTraitTypes(traitTypes);
-		traits.setLastRevised(LocalDateTime.now());
+		traits.setLastRevised(new Date());
 		traits.setUnits(units);
 		traits.setIsNotObservationTraits(!showInObservation);
 		traits.setShowInObservation(showInObservation);
@@ -329,7 +340,7 @@ public class TraitsServicesImpl implements TraitsServices {
 		traits.setSource(source);
 		traits.setIcon(icon);
 		traitsDao.save(traits);
-		if (values != null && !values.isEmpty()) {
+		if (values != null && !values.isEmpty() && dataType == "STRING") {
 			String[] array = values.split("\\|");
 			List<String> list = Arrays.asList(array);
 			Long index = (long) 1;
@@ -515,6 +526,178 @@ public class TraitsServicesImpl implements TraitsServices {
 	@Override
 	public List<TraitsValue> fetchTraitsValue(Long traitId) {
 		return traitsValueDao.findTraitsValue(traitId);
+	}
+
+	@Override
+	public String addNewTraits(HttpServletRequest request, String objectType, Long objectId,
+			Map<String, List> factsAddData) {
+		try {
+			Object SpeciesEs = esService.fetch("extended_species", "_doc", objectId.toString()).getDocument();
+			ObjectMapper objectMapper = new ObjectMapper();
+			if (SpeciesEs instanceof String) {
+				// Parse the JSON string
+				String speciesEsJson = (String) SpeciesEs;
+				JsonNode rootNode = objectMapper.readTree(speciesEsJson);
+				List<Map<String, Object>> factsEs = objectMapper.convertValue(rootNode.get("facts"), List.class);
+				if (factsEs == null) {
+					factsEs = new ArrayList<>();
+				}
+				for (Entry<String, List> fact : factsAddData.entrySet()) {
+					Traits trait = traitsDao.findById(Long.parseLong(fact.getKey()));
+					if (trait.getDataType().equals("STRING")) {
+						List<Integer> traitsValueList = fact.getValue();
+						if (trait.getTraitTypes().equals(TRAITTYPE.SINGLECATEGORICAL.getValue())) {
+							if (traitsValueList != null && !traitsValueList.isEmpty()) {
+								Integer value = traitsValueList.get(0);
+								traitsValueList.clear();
+								traitsValueList.add(value);
+							}
+						}
+						String attribution = trait.getSource();
+
+//							traits with preDefined list
+						List<TraitsValue> valueList = traitsValueDao.findTraitsValue(trait.getId());
+						List<Long> validValueId = new ArrayList<Long>();
+						for (TraitsValue tv : valueList) {
+							validValueId.add(tv.getId());
+						}
+
+						String activityType = TRAITMSG.ADDEDFACT.getValue();
+						if (traitsValueList != null && !traitsValueList.isEmpty()) {
+							for (Integer newValue : traitsValueList) {
+								if (validValueId.contains((long) newValue)) {
+									Facts new_fact = new Facts(null, attribution, (long) 51, false, 822L, objectId,
+											null, trait.getId(), (long) newValue, null, objectType, null, null, null);
+
+									String value = traitsValueDao.findById(new_fact.getTraitValueId()).getValue();
+									String description = trait.getName() + ":" + value;
+
+									saveUpdateFacts(request, objectType, objectId, new_fact, description, activityType,
+											null);
+
+									Map<String, Object> EsAddFact = new LinkedHashMap<>();
+									EsAddFact.put("nameId", trait.getId());
+									EsAddFact.put("valueId", newValue);
+									EsAddFact.put("fromDate", null);
+									EsAddFact.put("name", trait.getName());
+									EsAddFact.put("type", trait.getTraitTypes());
+									EsAddFact.put("color", null);
+									EsAddFact.put("range", null);
+									EsAddFact.put("toDate", null);
+									EsAddFact.put("isParticipatory", trait.getIsParticipatory());
+									EsAddFact.put("value", null);
+									factsEs.add(EsAddFact);
+								}
+							}
+						}
+					} else if (trait.getDataType().equalsIgnoreCase(DATATYPE.NUMERIC.getValue())) {
+						List<String> traitsValueList = fact.getValue();
+						String[] values = traitsValueList.get(0).split(":");
+						if (values.length == 1) {
+							Facts facts = new Facts(null, trait.getSource(), (long) 51, false, defaultLicenseId,
+									objectId, null, trait.getId(), null, values[0].trim(), objectType, null, null,
+									null);
+							String description = trait.getName() + ":" + traitsValueList.get(0).toString();
+
+							saveUpdateFacts(request, objectType, objectId, facts, description,
+									TRAITMSG.ADDEDFACT.getValue(), null);
+							Map<String, Object> EsAddFact = new LinkedHashMap<>();
+							Map<String, Object> range = new LinkedHashMap<>();
+							range.put("nameId", trait.getId());
+							range.put("min", values[0].trim());
+							range.put("max", null);
+							EsAddFact.put("nameId", trait.getId());
+							EsAddFact.put("valueId", null);
+							EsAddFact.put("fromDate", null);
+							EsAddFact.put("name", trait.getName());
+							EsAddFact.put("type", trait.getTraitTypes());
+							EsAddFact.put("color", null);
+							EsAddFact.put("range", range);
+							EsAddFact.put("toDate", null);
+							EsAddFact.put("isParticipatory", trait.getIsParticipatory());
+							EsAddFact.put("value", values[0].trim());
+							factsEs.add(EsAddFact);
+						} else {
+							Facts facts = new Facts(null, trait.getSource(), (long) 51, false, defaultLicenseId,
+									objectId, null, trait.getId(), null, values[0].trim(), objectType, values[1].trim(),
+									null, null);
+							String description = trait.getName() + ":" + traitsValueList.get(0).toString();
+
+							saveUpdateFacts(request, objectType, objectId, facts, description,
+									TRAITMSG.ADDEDFACT.getValue(), null);
+							Map<String, Object> EsAddFact = new LinkedHashMap<>();
+							Map<String, Object> range = new LinkedHashMap<>();
+							range.put("nameId", trait.getId());
+							range.put("min", values[0].trim());
+							range.put("max", values[1].trim());
+							EsAddFact.put("nameId", trait.getId());
+							EsAddFact.put("valueId", null);
+							EsAddFact.put("fromDate", null);
+							EsAddFact.put("name", trait.getName());
+							EsAddFact.put("type", trait.getTraitTypes());
+							EsAddFact.put("color", null);
+							EsAddFact.put("range", range);
+							EsAddFact.put("toDate", null);
+							EsAddFact.put("isParticipatory", trait.getIsParticipatory());
+							EsAddFact.put("value", values[0].trim());
+							factsEs.add(EsAddFact);
+						}
+					} else if (trait.getDataType().equalsIgnoreCase(DATATYPE.DATE.getValue())) {
+						List<String> traitsValueList = fact.getValue();
+						String pattern = "yyyy-MM-dd";
+						SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+						Date fromDate = sdf.parse(traitsValueList.get(0));
+						Date toDate = null;
+						if (traitsValueList.size() == 2) {
+							toDate = sdf.parse(traitsValueList.get(1));
+						}
+						Facts facts = new Facts(null, trait.getSource(), (long) 51, false, defaultLicenseId, objectId,
+								null, trait.getId(), null, null, objectType, null, fromDate, toDate);
+
+						String description = trait.getName() + ":" + traitsValueList.toString();
+
+						saveUpdateFacts(request, objectType, objectId, facts, description,
+								TRAITMSG.ADDEDFACT.getValue(), null);
+
+						SimpleDateFormat sdfEs = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+						Map<String, Object> EsAddFact = new LinkedHashMap<>();
+						EsAddFact.put("nameId", trait.getId());
+						EsAddFact.put("valueId", null);
+						EsAddFact.put("fromDate", sdfEs.format(fromDate));
+						EsAddFact.put("name", trait.getName());
+						EsAddFact.put("type", trait.getTraitTypes());
+						EsAddFact.put("color", null);
+						EsAddFact.put("range", null);
+						EsAddFact.put("toDate", sdfEs.format(toDate));
+						EsAddFact.put("isParticipatory", trait.getIsParticipatory());
+						EsAddFact.put("value", null);
+						factsEs.add(EsAddFact);
+
+					}
+				}
+				Map<String, Object> fields = new HashMap<>();
+				fields.put("facts", factsEs);
+				String updateContent = objectMapper.writeValueAsString(fields);
+				esService.updateEsField("extended_species", objectId.toString(), updateContent);
+				return factsEs.toString();
+			}
+
+			return SpeciesEs.toString();
+		} catch (ApiException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return e.toString();
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return e.toString();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return e.toString();
+		}
+
 	}
 
 	@Override

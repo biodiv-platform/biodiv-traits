@@ -112,10 +112,10 @@ public class TraitsController {
 			@QueryParam("name") String name, @QueryParam("traitTypes") String traitTypes,
 			@QueryParam("showInObservation") Boolean showInObservation,
 			@QueryParam("isParticipatory") Boolean isParticipatory, @QueryParam("source") String source,
-			@QueryParam("traitValues") String traitValues) {
+			@ApiParam(name = "traitValues") Map<String, List<Map<String, Object>>> traitValues) {
 		try {
 			String result = services.updateTraits(description, id, name, traitTypes, showInObservation, isParticipatory,
-					source, traitValues);
+					source, traitValues.get("traitValues"));
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -272,6 +272,29 @@ public class TraitsController {
 		try {
 			Long trait = Long.parseLong(traitId);
 			List<TraitsValue> result = services.fetchTraitsValue(trait);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@PUT
+	@Path(ApiConstants.UPDATE + "/{objectType}/{objectId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	// @ValidateUser
+
+	@ApiOperation(value = "Updates the Traits with Values", notes = "Returns the list of allTraitValue Pair", response = FactValuePair.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Unable to edit the Traits", response = String.class) })
+
+	public Response addNewTraits(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
+			@PathParam("objectId") String objectId, @ApiParam(name = "factsAddData") Map<String, List> factsAddData) {
+		try {
+			Long objId = Long.parseLong(objectId);
+			String result = services.addNewTraits(request, objectType, objId, factsAddData);
+			// List<FactValuePair> result = services.updateTraits(request, objectType,
+			// objId, trait, factsUpdateData);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
