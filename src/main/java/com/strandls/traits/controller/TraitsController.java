@@ -283,18 +283,15 @@ public class TraitsController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	// @ValidateUser
-
-	@ApiOperation(value = "Updates the Traits with Values", notes = "Returns the list of allTraitValue Pair", response = FactValuePair.class, responseContainer = "List")
+	@ApiOperation(value = "Adds new Traits", notes = "Returns the list of allTraitValue Pair", response = FactValuePair.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Unable to edit the Traits", response = String.class) })
 
 	public Response addNewTraits(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
-			@PathParam("objectId") String objectId, @ApiParam(name = "factsAddData") Map<String, List> factsAddData) {
+			@PathParam("objectId") String objectId, @ApiParam(name = "factsAddData") Map<String, List> factsAddData,
+			@QueryParam("userId") String userId, @QueryParam("taxonId") String taxonId) {
 		try {
 			Long objId = Long.parseLong(objectId);
-			String result = services.addNewTraits(request, objectType, objId, factsAddData);
-			// List<FactValuePair> result = services.updateTraits(request, objectType,
-			// objId, trait, factsUpdateData);
+			String result = services.addNewTraits(request, objectType, objId, factsAddData, userId, taxonId);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();

@@ -3,6 +3,7 @@
  */
 package com.strandls.traits.services.Impl;
 
+import java.awt.Color;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -530,7 +531,7 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Override
 	public String addNewTraits(HttpServletRequest request, String objectType, Long objectId,
-			Map<String, List> factsAddData) {
+			Map<String, List> factsAddData, String userId, String taxonId) {
 		try {
 			Object SpeciesEs = esService.fetch("extended_species", "_doc", objectId.toString()).getDocument();
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -545,10 +546,10 @@ public class TraitsServicesImpl implements TraitsServices {
 				for (Entry<String, List> fact : factsAddData.entrySet()) {
 					Traits trait = traitsDao.findById(Long.parseLong(fact.getKey()));
 					if (trait.getDataType().equals("STRING")) {
-						List<Integer> traitsValueList = fact.getValue();
+						List<Object> traitsValueList = fact.getValue();
 						if (trait.getTraitTypes().equals(TRAITTYPE.SINGLECATEGORICAL.getValue())) {
 							if (traitsValueList != null && !traitsValueList.isEmpty()) {
-								Integer value = traitsValueList.get(0);
+								Object value = traitsValueList.get(0);
 								traitsValueList.clear();
 								traitsValueList.add(value);
 							}
@@ -564,10 +565,11 @@ public class TraitsServicesImpl implements TraitsServices {
 
 						String activityType = TRAITMSG.ADDEDFACT.getValue();
 						if (traitsValueList != null && !traitsValueList.isEmpty()) {
-							for (Integer newValue : traitsValueList) {
-								if (validValueId.contains((long) newValue)) {
-									Facts new_fact = new Facts(null, attribution, (long) 51, false, 822L, objectId,
-											null, trait.getId(), (long) newValue, null, objectType, null, null, null);
+							for (Object newValue : traitsValueList) {
+								if (validValueId.contains(Long.valueOf(newValue.toString()))) {
+									Facts new_fact = new Facts(null, attribution, Long.parseLong(userId), false, 822L,
+											objectId, Long.parseLong(taxonId), trait.getId(),
+											Long.valueOf(newValue.toString()), null, objectType, null, null, null);
 
 									String value = traitsValueDao.findById(new_fact.getTraitValueId()).getValue();
 									String description = trait.getName() + ":" + value;
@@ -590,13 +592,14 @@ public class TraitsServicesImpl implements TraitsServices {
 								}
 							}
 						}
-					} else if (trait.getDataType().equalsIgnoreCase(DATATYPE.NUMERIC.getValue())) {
+					} else if (trait.getDataType().equalsIgnoreCase(DATATYPE.NUMERIC.getValue())
+							&& fact.getValue() != null) {
 						List<String> traitsValueList = fact.getValue();
 						String[] values = traitsValueList.get(0).split(":");
 						if (values.length == 1) {
-							Facts facts = new Facts(null, trait.getSource(), (long) 51, false, defaultLicenseId,
-									objectId, null, trait.getId(), null, values[0].trim(), objectType, null, null,
-									null);
+							Facts facts = new Facts(null, trait.getSource(), Long.parseLong(userId), false,
+									defaultLicenseId, objectId, Long.parseLong(taxonId), trait.getId(), null,
+									values[0].trim(), objectType, null, null, null);
 							String description = trait.getName() + ":" + traitsValueList.get(0).toString();
 
 							saveUpdateFacts(request, objectType, objectId, facts, description,
@@ -618,9 +621,9 @@ public class TraitsServicesImpl implements TraitsServices {
 							EsAddFact.put("value", values[0].trim());
 							factsEs.add(EsAddFact);
 						} else {
-							Facts facts = new Facts(null, trait.getSource(), (long) 51, false, defaultLicenseId,
-									objectId, null, trait.getId(), null, values[0].trim(), objectType, values[1].trim(),
-									null, null);
+							Facts facts = new Facts(null, trait.getSource(), Long.parseLong(userId), false,
+									defaultLicenseId, objectId, Long.parseLong(taxonId), trait.getId(), null,
+									values[0].trim(), objectType, values[1].trim(), null, null);
 							String description = trait.getName() + ":" + traitsValueList.get(0).toString();
 
 							saveUpdateFacts(request, objectType, objectId, facts, description,
@@ -651,8 +654,9 @@ public class TraitsServicesImpl implements TraitsServices {
 						if (traitsValueList.size() == 2) {
 							toDate = sdf.parse(traitsValueList.get(1));
 						}
-						Facts facts = new Facts(null, trait.getSource(), (long) 51, false, defaultLicenseId, objectId,
-								null, trait.getId(), null, null, objectType, null, fromDate, toDate);
+						Facts facts = new Facts(null, trait.getSource(), Long.parseLong(userId), false,
+								defaultLicenseId, objectId, Long.parseLong(taxonId), trait.getId(), null, null,
+								objectType, null, fromDate, toDate);
 
 						String description = trait.getName() + ":" + traitsValueList.toString();
 
@@ -669,11 +673,55 @@ public class TraitsServicesImpl implements TraitsServices {
 						EsAddFact.put("type", trait.getTraitTypes());
 						EsAddFact.put("color", null);
 						EsAddFact.put("range", null);
-						EsAddFact.put("toDate", sdfEs.format(toDate));
+						if (traitsValueList.size() == 2) {
+							EsAddFact.put("toDate", sdfEs.format(toDate));
+						} else {
+							EsAddFact.put("toDate", null);
+						}
 						EsAddFact.put("isParticipatory", trait.getIsParticipatory());
 						EsAddFact.put("value", null);
 						factsEs.add(EsAddFact);
 
+					} else {
+						List<Object> traitsValueList = fact.getValue();
+						String activityType = TRAITMSG.ADDEDFACT.getValue();
+						if (traitsValueList != null && !traitsValueList.isEmpty()) {
+							for (Object newValue : traitsValueList) {
+								if (newValue instanceof Map) {
+									String color = ((Map) newValue).get("value").toString();
+									Facts new_fact = new Facts(null, trait.getSource(), Long.parseLong(userId), false,
+											defaultLicenseId, objectId, Long.parseLong(taxonId), trait.getId(), null,
+											color, objectType, null, null, null);
+									String description = trait.getName() + ":" + color;
+
+									saveUpdateFacts(request, objectType, objectId, new_fact, description, activityType,
+											null);
+
+									String[] parts = color.replace("rgb(", "").replace(")", "").split(",");
+
+									float[] hsv = Color.RGBtoHSB(Integer.parseInt(parts[0].trim()),
+											Integer.parseInt(parts[1].trim()), Integer.parseInt(parts[2].trim()), null);
+
+									Map<String, Object> EsAddFact = new LinkedHashMap<>();
+									Map<String, Object> range = new LinkedHashMap<>();
+									range.put("s", hsv[1] * 100);
+									range.put("h", hsv[0] * 360);
+									range.put("v", hsv[2] * 100);
+									range.put("nameId", trait.getId());
+									EsAddFact.put("nameId", trait.getId());
+									EsAddFact.put("valueId", null);
+									EsAddFact.put("fromDate", null);
+									EsAddFact.put("name", trait.getName());
+									EsAddFact.put("type", trait.getTraitTypes());
+									EsAddFact.put("color", range);
+									EsAddFact.put("range", null);
+									EsAddFact.put("toDate", null);
+									EsAddFact.put("isParticipatory", trait.getIsParticipatory());
+									EsAddFact.put("value", color);
+									factsEs.add(EsAddFact);
+								}
+							}
+						}
 					}
 				}
 				Map<String, Object> fields = new HashMap<>();
