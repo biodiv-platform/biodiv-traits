@@ -341,7 +341,7 @@ public class TraitsServicesImpl implements TraitsServices {
 		traits.setSource(source);
 		traits.setIcon(icon);
 		traitsDao.save(traits);
-		if (values != null && !values.isEmpty()) {
+		if (values != null && !values.isEmpty() && dataType.equals("STRING")) {
 			String[] array = values.split("\\|");
 			List<String> list = Arrays.asList(array);
 			Long index = (long) 1;
@@ -364,7 +364,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				index = index + 1;
 			}
 		}
-		if (min != null && !min.isEmpty()) {
+		if (min != null && !min.isEmpty() && dataType.equals("NUMERIC")) {
 			TraitsValue traitValue = new TraitsValue();
 			traitValue.setTraitInstanceId(traits.getId());
 			traitValue.setId(null);
@@ -375,7 +375,7 @@ public class TraitsServicesImpl implements TraitsServices {
 			traitValue.setValue(min);
 			traitsValueDao.save(traitValue);
 		}
-		if (max != null && !max.isEmpty()) {
+		if (max != null && !max.isEmpty() && dataType.equals("NUMERIC")) {
 			TraitsValue traitValue = new TraitsValue();
 			traitValue.setTraitInstanceId(traits.getId());
 			traitValue.setId(null);
