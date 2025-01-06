@@ -341,7 +341,7 @@ public class TraitsServicesImpl implements TraitsServices {
 		traits.setSource(source);
 		traits.setIcon(icon);
 		traitsDao.save(traits);
-		if (values != null && !values.isEmpty() && dataType == "STRING") {
+		if (values != null && !values.isEmpty()) {
 			String[] array = values.split("\\|");
 			List<String> list = Arrays.asList(array);
 			Long index = (long) 1;
