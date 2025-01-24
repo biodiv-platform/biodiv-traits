@@ -11,6 +11,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+
 import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
 import com.strandls.traits.pojo.FactsCreateData;
@@ -62,5 +64,7 @@ public interface TraitsServices {
 	public List<TraitsValuePair> getSpeciesTraits(Long taxonId);
 
 	public List<TraitsValuePair> getAllSpeciesTraits();
+
+	public List<Map<String, String>> importSpeciesTraits(FormDataBodyPart file);
 
 }

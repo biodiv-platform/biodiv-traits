@@ -100,4 +100,21 @@ public class TraitsDao extends AbstractDAO<Traits, Long> {
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
+	public List<Long> searchTraitName(String name) {
+		Session session = sessionFactory.openSession();
+		try {
+			String sqlString = "select t.id from Traits as t where lower(t.name) = :term order by t.name";
+			Query query = session.createQuery(sqlString);
+			query.setMaxResults(10);
+			query.setParameter("term", name.toLowerCase().trim());
+			return query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return new ArrayList<>();
+	}
+
 }

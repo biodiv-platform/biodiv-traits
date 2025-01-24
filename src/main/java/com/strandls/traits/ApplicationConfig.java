@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 import javax.ws.rs.core.Application;
 
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.spi.Container;
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -114,6 +115,8 @@ public class ApplicationConfig extends Application {
 
 		resource.add(io.swagger.jaxrs.listing.SwaggerSerializers.class);
 		resource.add(io.swagger.jaxrs.listing.ApiListingResource.class);
+
+		resource.add(MultiPartFeature.class);
 
 		return resource;
 	}

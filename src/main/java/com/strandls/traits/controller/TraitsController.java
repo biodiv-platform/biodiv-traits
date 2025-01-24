@@ -3,6 +3,7 @@
  */
 package com.strandls.traits.controller;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +23,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+
 import com.strandls.authentication_utility.filter.ValidateUser;
+import com.strandls.taxonomy.pojo.FileMetadata;
 import com.strandls.traits.ApiConstants;
 import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
@@ -354,6 +359,24 @@ public class TraitsController {
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@Path("upload/batch-upload")
+	@POST
+	@Consumes({ MediaType.MULTIPART_FORM_DATA })
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Upload the file for taxon definition", notes = "Returns succuess failure", response = FileMetadata.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "file not present", response = String.class),
+			@ApiResponse(code = 500, message = "ERROR", response = String.class) })
+	public Response uploadSearch(final FormDataMultiPart multiPart) {
+		FormDataBodyPart filePart = multiPart.getField("file");
+		if (filePart == null) {
+			return Response.status(Response.Status.BAD_REQUEST).entity("File not present").build();
+		} else {
+			List<Map<String, String>> result;
+			result = services.importSpeciesTraits(filePart);
+			return Response.ok().entity(result).build();
 		}
 	}
 
