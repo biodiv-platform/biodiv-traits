@@ -966,8 +966,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				String cellValue = cell.getStringCellValue();
 				headers.add(cell.getStringCellValue());
 				List<Long> traitIds = traitsDao
-						.searchTraitName(cellValue.contains("(") ? cellValue.substring(0, cellValue.indexOf('(')).trim()
-								: cellValue.trim());
+						.searchTraitName(cellValue.trim());
 				if (traitIds.size() > 0) {
 					Traits traitMatch = traitsDao.findById(traitIds.get(0));
 					TraitsValuePair traitValueMatch = new TraitsValuePair(traitMatch, null);
