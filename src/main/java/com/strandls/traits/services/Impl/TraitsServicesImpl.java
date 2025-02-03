@@ -1061,7 +1061,7 @@ public class TraitsServicesImpl implements TraitsServices {
 							}
 						} else {
 							rowData.put(headers.get(i)
-									+ (i > 2 && i < (headers.size() - 4) ? "|" + traits.containsKey(headers.get(i))
+									+ (traitColumns.contains(String.valueOf(i)) ? "|" + traits.containsKey(headers.get(i))
 											+ (traits.containsKey(headers.get(i))
 													? "|" + traits.get(headers.get(i)).getTraits().getId()
 													: "")
