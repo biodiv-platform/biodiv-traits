@@ -4,6 +4,7 @@
 package com.strandls.traits.controller;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -371,11 +372,22 @@ public class TraitsController {
 			@ApiResponse(code = 500, message = "ERROR", response = String.class) })
 	public Response uploadSearch(final FormDataMultiPart multiPart) {
 		FormDataBodyPart filePart = multiPart.getField("file");
+		List<String> traits = Arrays.asList(multiPart.getField("traits").getValue().split("|"));
+		String scientificNameColumn = multiPart.getField("scientificName").getValue();
+		String taxonColumn = multiPart.getField("TaxonConceptId").getValue();
+		String speciesIdColumn = multiPart.getField("SpeciesId").getValue();
+		String contributorColumn = multiPart.getField("Contributor").getValue();
+		FormDataBodyPart attributionColumn = multiPart.getField("Attribution");
 		if (filePart == null) {
 			return Response.status(Response.Status.BAD_REQUEST).entity("File not present").build();
 		} else {
 			List<Map<String, String>> result;
-			result = services.importSpeciesTraits(filePart);
+			if(attributionColumn!=null) {
+			result = services.importSpeciesTraits(filePart, traits, scientificNameColumn, taxonColumn, speciesIdColumn, contributorColumn, attributionColumn.getValue());
+			}
+			else {
+				result = services.importSpeciesTraits(filePart, traits, scientificNameColumn, taxonColumn, speciesIdColumn, contributorColumn, null);
+			}
 			return Response.ok().entity(result).build();
 		}
 	}

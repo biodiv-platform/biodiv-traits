@@ -553,7 +553,7 @@ public class TraitsServicesImpl implements TraitsServices {
 					factsEs = new ArrayList<>();
 				}
 				for (Entry<String, List> fact : factsAddData.entrySet()) {
-					Traits trait = traitsDao.findById(Long.parseLong(fact.getKey()));
+					Traits trait = traitsDao.findById(Long.parseLong(fact.getKey().split("\\|")[0]));
 					if (trait.getDataType().equals("STRING")) {
 						List<Object> traitsValueList = fact.getValue();
 						if (trait.getTraitTypes().equals(TRAITTYPE.SINGLECATEGORICAL.getValue())) {
@@ -564,6 +564,9 @@ public class TraitsServicesImpl implements TraitsServices {
 							}
 						}
 						String attribution = trait.getSource();
+						if(fact.getKey().split("\\|").length>1) {
+							attribution= fact.getKey().split("\\|")[1];
+						}
 
 //							traits with preDefined list
 						List<TraitsValue> valueList = traitsValueDao.findTraitsValue(trait.getId());
@@ -604,7 +607,7 @@ public class TraitsServicesImpl implements TraitsServices {
 
 									Map<String, Object> EsAddFact = new LinkedHashMap<>();
 									EsAddFact.put("nameId", trait.getId());
-									EsAddFact.put("valueId", newValue);
+									EsAddFact.put("valueId", Long.valueOf(newValue.toString()));
 									EsAddFact.put("fromDate", null);
 									EsAddFact.put("name", trait.getName());
 									EsAddFact.put("type", trait.getTraitTypes());
@@ -629,7 +632,7 @@ public class TraitsServicesImpl implements TraitsServices {
 						}
 						factsEs.removeIf(factEs -> trait.getId().toString().equals(factEs.get("nameId").toString()));
 						if (values.length == 1) {
-							Facts facts = new Facts(null, trait.getSource(), Long.parseLong(userId), false,
+							Facts facts = new Facts(null, (fact.getKey().split("\\|").length > 1) ? fact.getKey().split("\\|")[1] : trait.getSource(), Long.parseLong(userId), false,
 									defaultLicenseId, objectId, Long.parseLong(taxonId), trait.getId(), null,
 									values[0].trim(), objectType, null, null, null);
 							String description = trait.getName() + ":" + traitsValueList.get(0).toString();
@@ -653,7 +656,7 @@ public class TraitsServicesImpl implements TraitsServices {
 							EsAddFact.put("value", values[0].trim());
 							factsEs.add(EsAddFact);
 						} else {
-							Facts facts = new Facts(null, trait.getSource(), Long.parseLong(userId), false,
+							Facts facts = new Facts(null, (fact.getKey().split("\\|").length > 1) ? fact.getKey().split("\\|")[1] : trait.getSource(), Long.parseLong(userId), false,
 									defaultLicenseId, objectId, Long.parseLong(taxonId), trait.getId(), null,
 									values[0].trim(), objectType, values[1].trim(), null, null);
 							String description = trait.getName() + ":" + traitsValueList.get(0).toString();
@@ -687,7 +690,7 @@ public class TraitsServicesImpl implements TraitsServices {
 						if (traitsValueList.size() == 2) {
 							toDate = sdf.parse(traitsValueList.get(1));
 						}
-						Facts facts = new Facts(null, trait.getSource(), Long.parseLong(userId), false,
+						Facts facts = new Facts(null, (fact.getKey().split("\\|").length > 1) ? fact.getKey().split("\\|")[1] : trait.getSource(), Long.parseLong(userId), false,
 								defaultLicenseId, objectId, Long.parseLong(taxonId), trait.getId(), null, null,
 								objectType, null, fromDate, toDate);
 
@@ -734,7 +737,7 @@ public class TraitsServicesImpl implements TraitsServices {
 							for (Object newValue : traitsValueList) {
 								if (newValue instanceof Map) {
 									String color = ((Map) newValue).get("value").toString();
-									Facts new_fact = new Facts(null, trait.getSource(), Long.parseLong(userId), false,
+									Facts new_fact = new Facts(null, (fact.getKey().split("\\|").length > 1) ? fact.getKey().split("\\|")[1] : trait.getSource(), Long.parseLong(userId), false,
 											defaultLicenseId, objectId, Long.parseLong(taxonId), trait.getId(), null,
 											color, objectType, null, null, null);
 									String description = trait.getName() + ":" + color;
@@ -951,7 +954,8 @@ public class TraitsServicesImpl implements TraitsServices {
 	}
 
 	@Override
-	public List<Map<String, String>> importSpeciesTraits(FormDataBodyPart file) {
+	public List<Map<String, String>> importSpeciesTraits(FormDataBodyPart file, List<String> traitColumns,
+			String scientificNameColumn, String taxonColumn, String speciesIdColumn, String contributorColumn, String attributionColumn) {
 		InputStream inputStream = file.getValueAs(InputStream.class);
 		try {
 			Workbook workbook = new XSSFWorkbook(inputStream);
@@ -965,8 +969,7 @@ public class TraitsServicesImpl implements TraitsServices {
 			for (Cell cell : headerRow) {
 				String cellValue = cell.getStringCellValue();
 				headers.add(cell.getStringCellValue());
-				List<Long> traitIds = traitsDao
-						.searchTraitName(cellValue.trim());
+				List<Long> traitIds = traitsDao.searchTraitName(cellValue.trim());
 				if (traitIds.size() > 0) {
 					Traits traitMatch = traitsDao.findById(traitIds.get(0));
 					TraitsValuePair traitValueMatch = new TraitsValuePair(traitMatch, null);
@@ -986,7 +989,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				for (int i = 0; i < headers.size(); i++) {
 					if (!headers.get(i).endsWith("units")) {
 						if (row.getCell(i) != null && !row.getCell(i).toString().isEmpty()) {
-							if (i > 3 && i < (headers.size() - 4)) {
+							if (traitColumns.contains(String.valueOf(i))) {
 								if (traits.containsKey(headers.get(i))) {
 									if (traits.get(headers.get(i)).getTraits().getDataType().equals("STRING")) {
 										String finalFact = "";
@@ -1038,7 +1041,23 @@ public class TraitsServicesImpl implements TraitsServices {
 									rowData.put(headers.get(i) + "|false", row.getCell(i).toString());
 								}
 							} else {
-								rowData.put(headers.get(i), row.getCell(i).toString());
+								if (String.valueOf(i).equals(scientificNameColumn)) {
+									rowData.put("Scientific Name", row.getCell(i).toString());
+								} else if (String.valueOf(i).equals(taxonColumn)) {
+									rowData.put("Taxon Concept Id", row.getCell(i).toString());
+								}
+								 else if (String.valueOf(i).equals(speciesIdColumn)) {
+										rowData.put("Species Id", row.getCell(i).toString());
+									}
+								 else if (String.valueOf(i).equals(contributorColumn)) {
+										rowData.put("Contributor", row.getCell(i).toString());
+									}
+								 else if (String.valueOf(i).equals(attributionColumn)) {
+										rowData.put("Attribution", row.getCell(i).toString());
+									}
+								else {
+									rowData.put(headers.get(i), row.getCell(i).toString());
+								}
 							}
 						} else {
 							rowData.put(headers.get(i)
