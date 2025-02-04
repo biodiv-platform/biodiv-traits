@@ -593,7 +593,7 @@ public class TraitsServicesImpl implements TraitsServices {
 						String activityType = TRAITMSG.ADDEDFACT.getValue();
 						if (traitsValueList != null && !traitsValueList.isEmpty()) {
 							for (Object newValue : traitsValueList) {
-								if (previousFacts.contains(Long.valueOf(newValue.toString()))
+								if (!(previousFacts.contains(Long.valueOf(newValue.toString())))
 										&& validValueId.contains(Long.valueOf(newValue.toString()))) {
 									Facts new_fact = new Facts(null, attribution, Long.parseLong(userId), false, 822L,
 											objectId, Long.parseLong(taxonId), trait.getId(),
@@ -721,7 +721,6 @@ public class TraitsServicesImpl implements TraitsServices {
 					} else {
 						List<Object> traitsValueList = fact.getValue();
 						List<Facts> previousFacts = factsDao.fetchByTraitId(objectType, objectId, trait.getId());
-						System.out.println(previousFacts);
 						if (previousFacts != null && !previousFacts.isEmpty()) {
 							for (Facts prevfact : previousFacts) {
 
