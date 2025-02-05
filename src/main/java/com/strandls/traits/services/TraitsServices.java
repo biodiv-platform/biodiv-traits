@@ -65,6 +65,8 @@ public interface TraitsServices {
 
 	public List<TraitsValuePair> getAllSpeciesTraits();
 
-	public List<Map<String, String>> importSpeciesTraits(FormDataBodyPart file, List<String> traits, String scientificNameColumn, String taxonColumn, String speciesIdColumn, String contributorColumn, String attributionColumn);
+	public List<Map<String, String>> importSpeciesTraits(FormDataBodyPart file, List<String> traits,
+			String scientificNameColumn, String taxonColumn, String speciesIdColumn, String contributorColumn,
+			String attributionColumn, String licenseColumn);
 
 }

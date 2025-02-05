@@ -564,8 +564,8 @@ public class TraitsServicesImpl implements TraitsServices {
 							}
 						}
 						String attribution = trait.getSource();
-						if(fact.getKey().split("\\|").length>1) {
-							attribution= fact.getKey().split("\\|")[1];
+						if (fact.getKey().split("\\|").length > 1) {
+							attribution = fact.getKey().split("\\|")[1];
 						}
 
 //							traits with preDefined list
@@ -576,6 +576,7 @@ public class TraitsServicesImpl implements TraitsServices {
 						}
 
 						List<Facts> previousFacts = factsDao.fetchByTraitId(objectType, objectId, trait.getId());
+						List<Long> previousValueIds = new ArrayList();
 						if (previousFacts != null && !previousFacts.isEmpty()) {
 							for (Facts prevfact : previousFacts) {
 
@@ -583,6 +584,7 @@ public class TraitsServicesImpl implements TraitsServices {
 									if (!(traitsValueList.contains(prevfact.getTraitValueId().toString()))) {
 										factsDao.delete(prevfact);
 									}
+									previousValueIds.add(prevfact.getTraitValueId());
 								}
 							}
 						}
@@ -593,7 +595,7 @@ public class TraitsServicesImpl implements TraitsServices {
 						String activityType = TRAITMSG.ADDEDFACT.getValue();
 						if (traitsValueList != null && !traitsValueList.isEmpty()) {
 							for (Object newValue : traitsValueList) {
-								if (!(previousFacts.contains(Long.valueOf(newValue.toString())))
+								if (!(previousValueIds.contains(Long.valueOf(newValue.toString())))
 										&& validValueId.contains(Long.valueOf(newValue.toString()))) {
 									Facts new_fact = new Facts(null, attribution, Long.parseLong(userId), false, 822L,
 											objectId, Long.parseLong(taxonId), trait.getId(),
@@ -632,9 +634,11 @@ public class TraitsServicesImpl implements TraitsServices {
 						}
 						factsEs.removeIf(factEs -> trait.getId().toString().equals(factEs.get("nameId").toString()));
 						if (values.length == 1) {
-							Facts facts = new Facts(null, (fact.getKey().split("\\|").length > 1) ? fact.getKey().split("\\|")[1] : trait.getSource(), Long.parseLong(userId), false,
-									defaultLicenseId, objectId, Long.parseLong(taxonId), trait.getId(), null,
-									values[0].trim(), objectType, null, null, null);
+							Facts facts = new Facts(null,
+									(fact.getKey().split("\\|").length > 1) ? fact.getKey().split("\\|")[1]
+											: trait.getSource(),
+									Long.parseLong(userId), false, defaultLicenseId, objectId, Long.parseLong(taxonId),
+									trait.getId(), null, values[0].trim(), objectType, null, null, null);
 							String description = trait.getName() + ":" + traitsValueList.get(0).toString();
 
 							saveUpdateFacts(request, objectType, objectId, facts, description,
@@ -656,9 +660,11 @@ public class TraitsServicesImpl implements TraitsServices {
 							EsAddFact.put("value", values[0].trim());
 							factsEs.add(EsAddFact);
 						} else {
-							Facts facts = new Facts(null, (fact.getKey().split("\\|").length > 1) ? fact.getKey().split("\\|")[1] : trait.getSource(), Long.parseLong(userId), false,
-									defaultLicenseId, objectId, Long.parseLong(taxonId), trait.getId(), null,
-									values[0].trim(), objectType, values[1].trim(), null, null);
+							Facts facts = new Facts(null,
+									(fact.getKey().split("\\|").length > 1) ? fact.getKey().split("\\|")[1]
+											: trait.getSource(),
+									Long.parseLong(userId), false, defaultLicenseId, objectId, Long.parseLong(taxonId),
+									trait.getId(), null, values[0].trim(), objectType, values[1].trim(), null, null);
 							String description = trait.getName() + ":" + traitsValueList.get(0).toString();
 
 							saveUpdateFacts(request, objectType, objectId, facts, description,
@@ -690,9 +696,11 @@ public class TraitsServicesImpl implements TraitsServices {
 						if (traitsValueList.size() == 2) {
 							toDate = sdf.parse(traitsValueList.get(1));
 						}
-						Facts facts = new Facts(null, (fact.getKey().split("\\|").length > 1) ? fact.getKey().split("\\|")[1] : trait.getSource(), Long.parseLong(userId), false,
-								defaultLicenseId, objectId, Long.parseLong(taxonId), trait.getId(), null, null,
-								objectType, null, fromDate, toDate);
+						Facts facts = new Facts(null,
+								(fact.getKey().split("\\|").length > 1) ? fact.getKey().split("\\|")[1]
+										: trait.getSource(),
+								Long.parseLong(userId), false, defaultLicenseId, objectId, Long.parseLong(taxonId),
+								trait.getId(), null, null, objectType, null, fromDate, toDate);
 
 						String description = trait.getName() + ":" + traitsValueList.toString();
 
@@ -719,8 +727,9 @@ public class TraitsServicesImpl implements TraitsServices {
 						factsEs.add(EsAddFact);
 
 					} else {
-						List<Object> traitsValueList = fact.getValue();
+						List<String> traitsValueList = fact.getValue();
 						List<Facts> previousFacts = factsDao.fetchByTraitId(objectType, objectId, trait.getId());
+						List<String> previousValues = new ArrayList();
 						if (previousFacts != null && !previousFacts.isEmpty()) {
 							for (Facts prevfact : previousFacts) {
 
@@ -728,17 +737,24 @@ public class TraitsServicesImpl implements TraitsServices {
 									if (!(traitsValueList.contains(prevfact.getValue().toString()))) {
 										factsDao.delete(prevfact);
 									}
+									previousValues.add(prevfact.getValue());
 								}
 							}
 						}
+
+						factsEs.removeIf(factEs -> trait.getId().toString().equals(factEs.get("nameId").toString())
+								&& !traitsValueList.contains(factEs.get("value").toString()));
 						String activityType = TRAITMSG.ADDEDFACT.getValue();
 						if (traitsValueList != null && !traitsValueList.isEmpty()) {
-							for (Object newValue : traitsValueList) {
-								if (newValue instanceof Map) {
-									String color = ((Map) newValue).get("value").toString();
-									Facts new_fact = new Facts(null, (fact.getKey().split("\\|").length > 1) ? fact.getKey().split("\\|")[1] : trait.getSource(), Long.parseLong(userId), false,
-											defaultLicenseId, objectId, Long.parseLong(taxonId), trait.getId(), null,
-											color, objectType, null, null, null);
+							for (String newValue : traitsValueList) {
+								if (!(previousValues.contains(newValue.toString()))) {
+									String color = (newValue.toString());
+									Facts new_fact = new Facts(null,
+											(fact.getKey().split("\\|").length > 1) ? fact.getKey().split("\\|")[1]
+													: trait.getSource(),
+											Long.parseLong(userId), false, defaultLicenseId, objectId,
+											Long.parseLong(taxonId), trait.getId(), null, color, objectType, null, null,
+											null);
 									String description = trait.getName() + ":" + color;
 
 									saveUpdateFacts(request, objectType, objectId, new_fact, description, activityType,
@@ -954,7 +970,8 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Override
 	public List<Map<String, String>> importSpeciesTraits(FormDataBodyPart file, List<String> traitColumns,
-			String scientificNameColumn, String taxonColumn, String speciesIdColumn, String contributorColumn, String attributionColumn) {
+			String scientificNameColumn, String taxonColumn, String speciesIdColumn, String contributorColumn,
+			String attributionColumn, String licenseColumn) {
 		InputStream inputStream = file.getValueAs(InputStream.class);
 		try {
 			Workbook workbook = new XSSFWorkbook(inputStream);
@@ -1044,28 +1061,25 @@ public class TraitsServicesImpl implements TraitsServices {
 									rowData.put("Scientific Name", row.getCell(i).toString());
 								} else if (String.valueOf(i).equals(taxonColumn)) {
 									rowData.put("Taxon Concept Id", row.getCell(i).toString());
-								}
-								 else if (String.valueOf(i).equals(speciesIdColumn)) {
-										rowData.put("Species Id", row.getCell(i).toString());
-									}
-								 else if (String.valueOf(i).equals(contributorColumn)) {
-										rowData.put("Contributor", row.getCell(i).toString());
-									}
-								 else if (String.valueOf(i).equals(attributionColumn)) {
-										rowData.put("Attribution", row.getCell(i).toString());
-									}
-								else {
+								} else if (String.valueOf(i).equals(speciesIdColumn)) {
+									rowData.put("Species Id", row.getCell(i).toString());
+								} else if (String.valueOf(i).equals(contributorColumn)) {
+									rowData.put("Contributor", row.getCell(i).toString());
+								} else if (String.valueOf(i).equals(attributionColumn)) {
+									rowData.put("Attribution", row.getCell(i).toString());
+								} else if (String.valueOf(i).equals(licenseColumn)) {
+									rowData.put("License", row.getCell(i).toString());
+								} else {
 									rowData.put(headers.get(i), row.getCell(i).toString());
 								}
 							}
 						} else {
-							rowData.put(headers.get(i)
-									+ (traitColumns.contains(String.valueOf(i)) ? "|" + traits.containsKey(headers.get(i))
+							rowData.put(headers.get(i) + (traitColumns.contains(String.valueOf(i))
+									? "|" + traits.containsKey(headers.get(i))
 											+ (traits.containsKey(headers.get(i))
 													? "|" + traits.get(headers.get(i)).getTraits().getId()
 													: "")
-											: ""),
-									null);
+									: ""), null);
 						}
 					}
 				}

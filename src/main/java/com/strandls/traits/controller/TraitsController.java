@@ -27,6 +27,7 @@ import javax.ws.rs.core.Response.Status;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.taxonomy.pojo.FileMetadata;
 import com.strandls.traits.ApiConstants;
@@ -372,22 +373,20 @@ public class TraitsController {
 			@ApiResponse(code = 500, message = "ERROR", response = String.class) })
 	public Response uploadSearch(final FormDataMultiPart multiPart) {
 		FormDataBodyPart filePart = multiPart.getField("file");
-		List<String> traits = Arrays.asList(multiPart.getField("traits").getValue().split("|"));
+		List<String> traits = Arrays.asList(multiPart.getField("traits").getValue().split("\\|"));
 		String scientificNameColumn = multiPart.getField("scientificName").getValue();
 		String taxonColumn = multiPart.getField("TaxonConceptId").getValue();
 		String speciesIdColumn = multiPart.getField("SpeciesId").getValue();
 		String contributorColumn = multiPart.getField("Contributor").getValue();
 		FormDataBodyPart attributionColumn = multiPart.getField("Attribution");
+		FormDataBodyPart licenseColumn = multiPart.getField("License");
 		if (filePart == null) {
 			return Response.status(Response.Status.BAD_REQUEST).entity("File not present").build();
 		} else {
 			List<Map<String, String>> result;
-			if(attributionColumn!=null) {
-			result = services.importSpeciesTraits(filePart, traits, scientificNameColumn, taxonColumn, speciesIdColumn, contributorColumn, attributionColumn.getValue());
-			}
-			else {
-				result = services.importSpeciesTraits(filePart, traits, scientificNameColumn, taxonColumn, speciesIdColumn, contributorColumn, null);
-			}
+			result = services.importSpeciesTraits(filePart, traits, scientificNameColumn, taxonColumn, speciesIdColumn,
+					contributorColumn, (attributionColumn != null) ? attributionColumn.getValue() : null,
+					(licenseColumn != null) ? licenseColumn.getValue() : null);
 			return Response.ok().entity(result).build();
 		}
 	}
