@@ -99,22 +99,42 @@ public class TraitsDao extends AbstractDAO<Traits, Long> {
 		}
 		return result;
 	}
-
+	
 	@SuppressWarnings("unchecked")
-	public List<Long> searchTraitName(String name) {
+	public List<Traits> findTraitByTraitIdAndLanguageId(Long traitId, Long languageId) {
+		String qry = "from Traits t where t.traitId = :traitId and t.languageId = :languageId";
 		Session session = sessionFactory.openSession();
+		List<Traits> result = new ArrayList<Traits>();
 		try {
-			String sqlString = "select t.id from Traits as t where lower(t.name) = :term order by t.name";
-			Query query = session.createQuery(sqlString);
-			query.setMaxResults(10);
-			query.setParameter("term", name.toLowerCase().trim());
-			return query.getResultList();
+			Query<Traits> query = session.createQuery(qry);
+			query.setParameter("traitId", traitId);
+			query.setParameter("languageId", languageId);
+			result = query.getResultList();
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		} finally {
 			session.close();
 		}
-		return new ArrayList<>();
+
+		return result;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Traits> findTraitByTraitId(Long traitId) {
+		String qry = "from Traits t where t.traitId = :traitId";
+		Session session = sessionFactory.openSession();
+		List<Traits> result = new ArrayList<Traits>();
+		try {
+			Query<Traits> query = session.createQuery(qry);
+			query.setParameter("traitId", traitId);
+			result = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+
+		return result;
 	}
 
 }

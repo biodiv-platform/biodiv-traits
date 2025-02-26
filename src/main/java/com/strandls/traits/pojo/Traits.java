@@ -40,6 +40,8 @@ public class Traits implements Serializable {
 	private Boolean isDeleted;
 	private String source;
 	private String icon;
+	private Long traitId;
+	private Long languageId;
 
 	@Id
 	@GeneratedValue
@@ -176,6 +178,24 @@ public class Traits implements Serializable {
 
 	public void setIsNotObservationTraits(Boolean isNotObservationTraits) {
 		this.isNotObservationTraits = isNotObservationTraits;
+	}
+	
+	@Column(name = "trait_id")
+	public Long getTraitId() {
+		return traitId;
+	}
+
+	public void setTraitId(Long traitId) {
+		this.traitId = traitId;
+	}
+	
+	@Column(name = "language_id")
+	public Long getLanguageId() {
+		return languageId;
+	}
+
+	public void setLanguageId(Long languageId) {
+		this.languageId = languageId;
 	}
 
 }

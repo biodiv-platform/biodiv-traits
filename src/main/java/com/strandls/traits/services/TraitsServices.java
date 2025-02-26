@@ -7,9 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 
@@ -17,11 +14,8 @@ import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
 import com.strandls.traits.pojo.FactsCreateData;
 import com.strandls.traits.pojo.FactsUpdateData;
-import com.strandls.traits.pojo.Traits;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.pojo.TraitsValuePair;
-
-import io.swagger.annotations.ApiParam;
 
 /**
  * @author Abhishek Rudra
@@ -41,13 +35,12 @@ public interface TraitsServices {
 			String traitTypes, String units, Boolean showInObservation, Boolean isParticipatory, String values,
 			String taxonIds, String icon, String min, String max);
 
-	public String updateTraits(String description, Long id, String name, String traitTypes, Boolean showInObservation,
-			Boolean isParticipatory, String source, List<Map<String, Object>> list);
+	public String updateTraits(Long id, List<Map<String, Object>> list);
 
 	public List<FactValuePair> createFacts(HttpServletRequest request, String objectType, Long objectId,
 			FactsCreateData factsCreateData);
 
-	public Map<String, Object> fetchByTraitId(Long traitId);
+	public Map<String, Object> fetchByTraitIdByLanguageId(Long traitId, Long languageId);
 
 	public List<Facts> fetchByTaxonId(Long taxonId);
 
@@ -68,5 +61,7 @@ public interface TraitsServices {
 	public List<Map<String, String>> importSpeciesTraits(FormDataBodyPart file, List<String> traits,
 			String scientificNameColumn, String taxonColumn, String speciesIdColumn, String contributorColumn,
 			String attributionColumn, String licenseColumn);
+
+	public List<Map<String, Object>> fetchByTraitId(Long traitId);
 
 }

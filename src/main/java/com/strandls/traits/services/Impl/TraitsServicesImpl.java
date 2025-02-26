@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -39,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.strandls.activity.pojo.MailData;
@@ -283,18 +281,46 @@ public class TraitsServicesImpl implements TraitsServices {
 	}
 
 	@Override
-	public String updateTraits(String description, Long id, String name, String traitTypes, Boolean showInObservation,
-			Boolean isParticipatory, String source, List<Map<String, Object>> traitValues) {
-		Traits trait = traitsDao.findById(id);
-		trait.setDescription(description);
-		trait.setName(name);
-		trait.setTraitTypes(traitTypes);
-		trait.setShowInObservation(showInObservation);
-		trait.setIsNotObservationTraits(!showInObservation);
-		trait.setIsParticipatory(isParticipatory);
-		trait.setSource(source);
-		trait.setLastRevised(new Date());
-		traitsDao.update(trait);
+	public String updateTraits(Long id,List<Map<String, Object>> translations) {
+		for (Map<String, Object> translation: translations) {
+			if (translation.get("id")!=null) {
+				Traits trait = traitsDao.findById(Long.valueOf(translation.get("id").toString()));
+				trait.setDescription(translation.get("description").toString());
+				trait.setName(translation.get("name").toString());
+				trait.setTraitTypes(translation.get("traitType").toString());
+				trait.setShowInObservation((Boolean) translation.get("isObservation"));
+				trait.setIsNotObservationTraits(!(Boolean) translation.get("isObservation"));
+				trait.setIsParticipatory((Boolean) translation.get("isParticipatory"));
+				trait.setSource(translation.get("source").toString());
+				trait.setLastRevised(new Date());
+				traitsDao.update(trait);
+			}
+			else {
+				Traits traits = new Traits();
+				traits.setId(null);
+				traits.setCreatedOn(new Date());
+				traits.setDataType(translation.get("dataType").toString());
+				traits.setDescription(translation.get("description").toString());
+				traits.setFieldId(Long.valueOf(translation.get("fieldId").toString()));
+				traits.setName(translation.get("name").toString());
+				traits.setTraitTypes(translation.get("traitType").toString());
+				traits.setLastRevised(new Date());
+				if(translation.get("units")!=null) {
+					traits.setUnits(translation.get("units").toString());
+				}
+				traits.setIsNotObservationTraits(!(Boolean) translation.get("isObservation"));
+				traits.setShowInObservation((Boolean) translation.get("isObservation"));
+				traits.setIsParticipatory((Boolean) translation.get("isParticipatory"));
+				traits.setIsDeleted(false);
+				traits.setSource(translation.get("source").toString());
+				if(translation.get("icon")!=null) {
+					traits.setUnits(translation.get("icon").toString());
+				}
+				traits.setTraitId(id);
+				traits.setLanguageId(Long.valueOf(translation.get("language").toString()));
+				traitsDao.save(traits);
+			}
+		/*
 		if (traitValues != null && !traitValues.isEmpty()) {
 			Long index = (long) 1;
 			for (Map<String, Object> value : traitValues) {
@@ -326,7 +352,9 @@ public class TraitsServicesImpl implements TraitsServices {
 				index = index + 1;
 			}
 		}
-		return trait.getId().toString();
+		return trait.getId().toString();*/
+		}
+		return translations.toString();
 	}
 
 	@Override
@@ -519,13 +547,30 @@ public class TraitsServicesImpl implements TraitsServices {
 	}
 
 	@Override
-	public Map<String, Object> fetchByTraitId(Long traitId) {
-		Traits traitDetails = traitsDao.findById(traitId);
+	public Map<String, Object> fetchByTraitIdByLanguageId(Long traitId, Long languageId) {
+		List<Traits> traitDetails = traitsDao.findTraitByTraitIdAndLanguageId(traitId, languageId);
+		if (traitDetails.size() == 0) {
+			traitDetails = traitsDao.findTraitByTraitId(traitId);
+		}
 		List<TraitsValue> traitValuesList = traitsValueDao.findTraitsValue(traitId);
-		Map<String, Object> details = new HashMap();
-		details.put("traits", traitDetails);
+		Map<String, Object> details = new HashMap<>();
+		details.put("traits", traitDetails.get(0));
 		details.put("values", traitValuesList);
 		return details;
+	}
+
+	@Override
+	public List<Map<String, Object>> fetchByTraitId(Long traitId) {
+		List<Map<String, Object>> result = new ArrayList<>();
+		List<Traits> traitDetails = traitsDao.findTraitByTraitId(traitId);
+		for (Traits t : traitDetails) {
+			List<TraitsValue> traitValuesList = traitsValueDao.findTraitsValue(t.getTraitId());
+			Map<String, Object> details = new HashMap<>();
+			details.put("traits", t);
+			details.put("values", traitValuesList);
+			result.add(details);
+		}
+		return result;
 	}
 
 	@Override
@@ -1071,11 +1116,12 @@ public class TraitsServicesImpl implements TraitsServices {
 				}
 				values.add(rowData);
 			}
+			workbook.close();
 			return values;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return new ArrayList();
+			return new ArrayList<>();
 		}
 	}
 

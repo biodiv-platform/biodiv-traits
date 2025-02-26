@@ -3,7 +3,6 @@
  */
 package com.strandls.traits.controller;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +10,6 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -27,7 +25,6 @@ import javax.ws.rs.core.Response.Status;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.taxonomy.pojo.FileMetadata;
 import com.strandls.traits.ApiConstants;
@@ -35,7 +32,6 @@ import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
 import com.strandls.traits.pojo.FactsCreateData;
 import com.strandls.traits.pojo.FactsUpdateData;
-import com.strandls.traits.pojo.Traits;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.pojo.TraitsValuePair;
 import com.strandls.traits.services.TraitsServices;
@@ -87,9 +83,9 @@ public class TraitsController {
 	@Path(ApiConstants.TRAIT + ApiConstants.CREATE)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ApiOperation(value = "Fetch all the Traits", notes = "Returns all the IBP traits", response = TraitsValuePair.class, responseContainer = "List")
+	@ApiOperation(value = "Create Trait", notes = "Creates trait with trait values and maps with taxon", response = TraitsValuePair.class, responseContainer = "List")
 	@ApiResponses(value = {
-			@ApiResponse(code = 400, message = "unable to fetch all the traits", response = String.class) })
+			@ApiResponse(code = 400, message = "unable to create trait", response = String.class) })
 
 	public Response createTrait(@QueryParam("dataType") String dataType, @QueryParam("description") String description,
 			@QueryParam("name") String name, @QueryParam("traitTypes") String traitTypes,
@@ -108,21 +104,16 @@ public class TraitsController {
 	}
 
 	@POST
-	@Path(ApiConstants.TRAIT + ApiConstants.UPDATE)
+	@Path(ApiConstants.TRAIT + ApiConstants.UPDATE+ "/{traitId}")
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ApiOperation(value = "Fetch all the Traits", notes = "Returns all the IBP traits", response = TraitsValuePair.class, responseContainer = "List")
+	@ApiOperation(value = "Update Trait", notes = "Updates the trait", response = TraitsValuePair.class, responseContainer = "List")
 	@ApiResponses(value = {
-			@ApiResponse(code = 400, message = "unable to fetch all the traits", response = String.class) })
+			@ApiResponse(code = 400, message = "unable to update trait", response = String.class) })
 
-	public Response updateTrait(@QueryParam("description") String description, @QueryParam("id") Long id,
-			@QueryParam("name") String name, @QueryParam("traitTypes") String traitTypes,
-			@QueryParam("showInObservation") Boolean showInObservation,
-			@QueryParam("isParticipatory") Boolean isParticipatory, @QueryParam("source") String source,
-			@ApiParam(name = "traitValues") Map<String, List<Map<String, Object>>> traitValues) {
+	public Response updateTrait(@PathParam("traitId") String traitId,@ApiParam(name = "translations") Map<String,List<Map<String,Object>>> translations) {
 		try {
-			String result = services.updateTraits(description, id, name, traitTypes, showInObservation, isParticipatory,
-					source, traitValues.get("traitValues"));
+			String result = services.updateTraits(Long.parseLong(traitId),translations.get("translations"));
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -214,18 +205,38 @@ public class TraitsController {
 	}
 
 	@GET
+	@Path(ApiConstants.TRAIT + "/{traitId}/{languageId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find by traitId and languageId", notes = "Returns trait details", response = Facts.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "Couldn't get trait details", response = String.class) })
+
+	public Response getTraitByTraitIdByLangId(@PathParam("traitId") String trtId, @PathParam("languageId") String langId) {
+		try {
+			Long traitId = Long.parseLong(trtId);
+			Long languageId = Long.parseLong(langId);
+			Map<String, Object> result = services.fetchByTraitIdByLanguageId(traitId, languageId);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+	
+	@GET
 	@Path(ApiConstants.TRAIT + "/{traitId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ApiOperation(value = "Find facts by taxonId", notes = "Returns list of facts for a particular TaxonId", response = Facts.class, responseContainer = "List")
+	@ApiOperation(value = "Find by traitId", notes = "Returns trait details for all translation", response = Facts.class, responseContainer = "List")
 	@ApiResponses(value = {
-			@ApiResponse(code = 400, message = "traits not found for TaxonId", response = String.class) })
+			@ApiResponse(code = 400, message = "Couldn't find trait details", response = String.class) })
 
-	public Response getTraitBytraitId(@PathParam("traitId") String trtId) {
+	public Response getTraitByTraitId(@PathParam("traitId") String trtId) {
 		try {
 			Long traitId = Long.parseLong(trtId);
-			Map<String, Object> result = services.fetchByTraitId(traitId);
+			List<Map<String, Object>> result = services.fetchByTraitId(traitId);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
@@ -368,7 +379,7 @@ public class TraitsController {
 	@POST
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Upload the file for taxon definition", notes = "Returns succuess failure", response = FileMetadata.class)
+	@ApiOperation(value = "Upload the file for taxon definition batch upload", notes = "Returns succuess failure", response = FileMetadata.class)
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "file not present", response = String.class),
 			@ApiResponse(code = 500, message = "ERROR", response = String.class) })
 	public Response uploadSearch(final FormDataMultiPart multiPart) {
