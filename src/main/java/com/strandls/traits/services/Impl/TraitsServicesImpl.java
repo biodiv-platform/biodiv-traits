@@ -829,7 +829,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				Map<String, Object> fields = new HashMap<>();
 				fields.put("facts", factsEs);
 				String updateContent = objectMapper.writeValueAsString(fields);
-				esService.updateEsField("extended_species", objectId.toString(), updateContent);
+				//esService.updateEsField("extended_species", objectId.toString(), updateContent);
 				return factsEs.toString();
 			}
 
