@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -57,6 +56,7 @@ import com.strandls.traits.pojo.FactsCreateData;
 import com.strandls.traits.pojo.FactsUpdateData;
 import com.strandls.traits.pojo.TraitTaxonomyDefinition;
 import com.strandls.traits.pojo.Traits;
+import com.strandls.traits.pojo.TraitsCreateData;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.pojo.TraitsValuePair;
 import com.strandls.traits.services.TraitsServices;
@@ -281,159 +281,156 @@ public class TraitsServicesImpl implements TraitsServices {
 	}
 
 	@Override
-	public String updateTraits(Long id,List<Map<String, Object>> translations) {
-		for (Map<String, Object> translation: translations) {
-			if (translation.get("id")!=null) {
-				Traits trait = traitsDao.findById(Long.valueOf(translation.get("id").toString()));
-				trait.setDescription(translation.get("description").toString());
-				trait.setName(translation.get("name").toString());
-				trait.setTraitTypes(translation.get("traitType").toString());
-				trait.setShowInObservation((Boolean) translation.get("isObservation"));
-				trait.setIsNotObservationTraits(!(Boolean) translation.get("isObservation"));
-				trait.setIsParticipatory((Boolean) translation.get("isParticipatory"));
-				trait.setSource(translation.get("source").toString());
+	public String updateTraits(Long id, List<TraitsValuePair> translations) {
+		List<Long> traitValueIds = new ArrayList<>();
+		for (TraitsValuePair translation : translations) {
+			if (translation.getTraits().getId() != null) {
+				Traits trait = traitsDao.findById(translation.getTraits().getId());
+				trait.setDescription(translation.getTraits().getDescription());
+				trait.setName(translation.getTraits().getName());
+				trait.setTraitTypes(translation.getTraits().getTraitTypes());
+				trait.setShowInObservation(translation.getTraits().getShowInObservation());
+				trait.setIsNotObservationTraits(translation.getTraits().getIsNotObservationTraits());
+				trait.setIsParticipatory(translation.getTraits().getIsParticipatory());
+				trait.setSource(translation.getTraits().getSource());
 				trait.setLastRevised(new Date());
 				traitsDao.update(trait);
-			}
-			else {
+			} else {
 				Traits traits = new Traits();
 				traits.setId(null);
 				traits.setCreatedOn(new Date());
-				traits.setDataType(translation.get("dataType").toString());
-				traits.setDescription(translation.get("description").toString());
-				traits.setFieldId(Long.valueOf(translation.get("fieldId").toString()));
-				traits.setName(translation.get("name").toString());
-				traits.setTraitTypes(translation.get("traitType").toString());
+				traits.setDataType(translation.getTraits().getDataType());
+				traits.setDescription(translation.getTraits().getDescription());
+				traits.setFieldId(translation.getTraits().getFieldId());
+				traits.setName(translation.getTraits().getName());
+				traits.setTraitTypes(translation.getTraits().getTraitTypes());
 				traits.setLastRevised(new Date());
-				if(translation.get("units")!=null) {
-					traits.setUnits(translation.get("units").toString());
-				}
-				traits.setIsNotObservationTraits(!(Boolean) translation.get("isObservation"));
-				traits.setShowInObservation((Boolean) translation.get("isObservation"));
-				traits.setIsParticipatory((Boolean) translation.get("isParticipatory"));
+				traits.setUnits(translation.getTraits().getUnits());
+				traits.setIsNotObservationTraits(translation.getTraits().getIsNotObservationTraits());
+				traits.setShowInObservation(translation.getTraits().getShowInObservation());
+				traits.setIsParticipatory(translation.getTraits().getIsParticipatory());
 				traits.setIsDeleted(false);
-				traits.setSource(translation.get("source").toString());
-				if(translation.get("icon")!=null) {
-					traits.setUnits(translation.get("icon").toString());
-				}
+				traits.setSource(translation.getTraits().getSource());
+				traits.setIcon(translation.getTraits().getIcon());
 				traits.setTraitId(id);
-				traits.setLanguageId(Long.valueOf(translation.get("language").toString()));
-				traitsDao.save(traits);
+				traits.setLanguageId(translation.getTraits().getLanguageId());
+				traits = traitsDao.save(traits);
 			}
-		/*
-		if (traitValues != null && !traitValues.isEmpty()) {
-			Long index = (long) 1;
-			for (Map<String, Object> value : traitValues) {
-				if (value.get("id") != null) {
-					TraitsValue traitValue = traitsValueDao.findById(Long.valueOf(value.get("id").toString()));
-					traitValue.setValue(value.get("value").toString());
-					traitValue.setDisplayOrder(index);
-					traitValue.setSource(source);
-					traitValue.setDescription(value.get("description").toString());
-					if (value.get("icon") != null) {
-						traitValue.setIcon(value.get("icon").toString());
+			Long index = (long) 0;
+			for (TraitsValue value : translation.getValues()) {
+				traitValueIds.add(value.getTraitValueId());
+				if (value.getTraitValueId() != null) {
+					if (value.getId() != null) {
+						TraitsValue traitValue = traitsValueDao.findById(value.getId());
+						traitValue.setValue(value.getValue());
+						traitValue.setDisplayOrder(index);
+						traitValue.setSource(translation.getTraits().getSource());
+						traitValue.setDescription(value.getDescription());
+						traitValue.setIcon(value.getIcon());
+						traitsValueDao.update(traitValue);
+					} else {
+						TraitsValue traitsValue = new TraitsValue();
+						traitsValue.setId(null);
+						traitsValue.setValue(value.getValue());
+						traitsValue.setSource(translation.getTraits().getSource());
+						traitsValue.setIcon(value.getIcon());
+						traitsValue.setIsDeleted(false);
+						traitsValue.setTraitInstanceId(id);
+						traitsValue.setDescription(value.getDescription());
+						traitsValue.setDisplayOrder(index);
+						traitsValue.setLanguageId(value.getLanguageId());
+						traitsValue.setTraitValueId(value.getTraitValueId());
+						traitsValue = traitsValueDao.save(traitsValue);
 					}
-					traitsValueDao.update(traitValue);
 				} else {
-					TraitsValue traitValue = new TraitsValue();
-					traitValue.setTraitInstanceId(id);
-					traitValue.setId(null);
-					traitValue.setDescription(value.get("description").toString());
-					traitValue.setSource(source);
-					traitValue.setDisplayOrder(index);
-					if (value.get("icon") != null) {
-						traitValue.setIcon(value.get("icon").toString());
+					TraitsValue traitsValue = new TraitsValue();
+					traitsValue.setId(null);
+					traitsValue.setValue(value.getValue());
+					traitsValue.setSource(translation.getTraits().getSource());
+					traitsValue.setIcon(value.getIcon());
+					traitsValue.setIsDeleted(false);
+					traitsValue.setTraitInstanceId(id);
+					traitsValue.setDescription(value.getDescription());
+					traitsValue.setDisplayOrder(index);
+					traitsValue.setLanguageId(value.getLanguageId());
+					if (traitValueIds.get(index.intValue()) != null) {
+						traitsValue.setTraitValueId(traitValueIds.get(index.intValue()));
 					}
-					traitValue.setIsDeleted(false);
-					traitValue.setValue(value.get("value").toString());
-					traitsValueDao.save(traitValue);
-
+					traitsValue = traitsValueDao.save(traitsValue);
+					if (traitValueIds.get(index.intValue()) == null) {
+						traitValueIds.set(index.intValue(), traitsValue.getId());
+						traitsValue.setTraitValueId(traitValueIds.get(index.intValue()));
+						traitsValueDao.update(traitsValue);
+					}
 				}
 				index = index + 1;
 			}
-		}
-		return trait.getId().toString();*/
 		}
 		return translations.toString();
 	}
 
 	@Override
-	public String createTraits(String dataType, String description, Long fieldId, String source, String name,
-			String traitTypes, String units, Boolean showInObservation, Boolean isParticipatory, String values,
-			String taxonIds, String icon, String min, String max) {
-		Traits traits = new Traits();
-		traits.setId(null);
-		traits.setCreatedOn(new Date());
-		traits.setDataType(dataType);
-		traits.setDescription(description);
-		traits.setFieldId(fieldId);
-		traits.setName(name);
-		traits.setTraitTypes(traitTypes);
-		traits.setLastRevised(new Date());
-		traits.setUnits(units);
-		traits.setIsNotObservationTraits(!showInObservation);
-		traits.setShowInObservation(showInObservation);
-		traits.setIsParticipatory(isParticipatory);
-		traits.setIsDeleted(false);
-		traits.setSource(source);
-		traits.setIcon(icon);
-		traitsDao.save(traits);
-		if (values != null && !values.isEmpty() && dataType.equals("STRING")) {
-			String[] array = values.split("\\|");
-			List<String> list = Arrays.asList(array);
-			Long index = (long) 1;
-			for (String value : list) {
-				String[] parts = value.split(":");
-				TraitsValue traitValue = new TraitsValue();
-				traitValue.setTraitInstanceId(traits.getId());
-				traitValue.setId(null);
-				traitValue.setDescription(parts[0]);
-				traitValue.setSource(source);
-				if (parts.length == 3) {
-					traitValue.setIcon(parts[2]);
-				} else {
-					traitValue.setIcon(null);
+	public String createTraits(List<TraitsCreateData> traitsCreateData) {
+		Long traitId = null;
+		List<Long> traitValueIds = new ArrayList<>();
+		for (TraitsCreateData traitData : traitsCreateData) {
+			Traits traits = new Traits();
+			traits.setId(null);
+			traits.setCreatedOn(new Date());
+			traits.setDataType(traitData.getTraits().getDataType());
+			traits.setDescription(traitData.getTraits().getDescription());
+			traits.setFieldId(traitData.getTraits().getFieldId());
+			traits.setName(traitData.getTraits().getName());
+			traits.setTraitTypes(traitData.getTraits().getTraitTypes());
+			traits.setLastRevised(new Date());
+			traits.setUnits(traitData.getTraits().getUnits());
+			traits.setIsNotObservationTraits(traitData.getTraits().getIsNotObservationTraits());
+			traits.setShowInObservation(traitData.getTraits().getShowInObservation());
+			traits.setIsParticipatory(traitData.getTraits().getIsParticipatory());
+			traits.setIsDeleted(false);
+			traits.setSource(traitData.getTraits().getSource());
+			traits.setIcon(traitData.getTraits().getIcon());
+			if (traitId != null) {
+				traits.setTraitId(traitId);
+			}
+			traits.setLanguageId(traitData.getTraits().getLanguageId());
+			traits = traitsDao.save(traits);
+			if (traitId == null) {
+				traitId = traits.getId();
+				traits.setTraitId(traitId);
+				traitsDao.update(traits);
+			}
+			Long index = (long) 0;
+			for (TraitsValue Value : traitData.getValues()) {
+				TraitsValue traitsValue = new TraitsValue();
+				traitsValue.setId(null);
+				traitsValue.setValue(Value.getValue());
+				traitsValue.setSource(traitData.getTraits().getSource());
+				traitsValue.setIcon(Value.getIcon());
+				traitsValue.setIsDeleted(false);
+				traitsValue.setTraitInstanceId(traitId);
+				traitsValue.setDescription(Value.getDescription());
+				traitsValue.setDisplayOrder(index);
+				traitsValue.setLanguageId(Value.getLanguageId());
+				if (traitValueIds.size() >= (index + 1)) {
+					traitsValue.setTraitValueId(traitValueIds.get(index.intValue()));
 				}
-				traitValue.setIsDeleted(false);
-				traitValue.setValue(parts[1]);
-				traitValue.setDisplayOrder(index);
-				traitsValueDao.save(traitValue);
+				traitsValue = traitsValueDao.save(traitsValue);
+				if (traitValueIds.size() < (index + 1)) {
+					traitValueIds.add(traitsValue.getId());
+					traitsValue.setTraitValueId(traitValueIds.get(index.intValue()));
+					traitsValueDao.update(traitsValue);
+				}
 				index = index + 1;
 			}
 		}
-		if (min != null && !min.isEmpty() && dataType.equals("NUMERIC")) {
-			TraitsValue traitValue = new TraitsValue();
-			traitValue.setTraitInstanceId(traits.getId());
-			traitValue.setId(null);
-			traitValue.setDescription("Min Value");
-			traitValue.setSource(source);
-			traitValue.setIcon(null);
-			traitValue.setIsDeleted(false);
-			traitValue.setValue(min);
-			traitsValueDao.save(traitValue);
+		for (TraitTaxonomyDefinition taxon : traitsCreateData.get(0).getQuery()) {
+			TraitTaxonomyDefinition taxonId = new TraitTaxonomyDefinition();
+			taxonId.setTraitTaxonId(traitId);
+			taxonId.setTaxonomyDefifintionId(taxon.getTaxonomyDefifintionId());
+			traitTaxonomyDef.save(taxonId);
 		}
-		if (max != null && !max.isEmpty() && dataType.equals("NUMERIC")) {
-			TraitsValue traitValue = new TraitsValue();
-			traitValue.setTraitInstanceId(traits.getId());
-			traitValue.setId(null);
-			traitValue.setDescription("Max Value");
-			traitValue.setSource(source);
-			traitValue.setIcon(null);
-			traitValue.setIsDeleted(false);
-			traitValue.setValue(max);
-			traitsValueDao.save(traitValue);
-		}
-		if (taxonIds != null && !taxonIds.isEmpty()) {
-			String[] array = taxonIds.split("\\|");
-			List<String> list = Arrays.asList(array);
-			for (String value : list) {
-				TraitTaxonomyDefinition taxonId = new TraitTaxonomyDefinition();
-				taxonId.setTraitTaxonId(traits.getId());
-				taxonId.setTaxonomyDefifintionId(Long.parseLong(value));
-				traitTaxonomyDef.save(taxonId);
-			}
-		}
-		return traits.getId().toString();
+		return traitId.toString();
 	}
 
 	@Override
@@ -552,7 +549,7 @@ public class TraitsServicesImpl implements TraitsServices {
 		if (traitDetails.size() == 0) {
 			traitDetails = traitsDao.findTraitByTraitId(traitId);
 		}
-		List<TraitsValue> traitValuesList = traitsValueDao.findTraitsValue(traitId);
+		List<TraitsValue> traitValuesList = traitsValueDao.findTraitsValueByLanguage(traitId, languageId);
 		Map<String, Object> details = new HashMap<>();
 		details.put("traits", traitDetails.get(0));
 		details.put("values", traitValuesList);
@@ -564,7 +561,8 @@ public class TraitsServicesImpl implements TraitsServices {
 		List<Map<String, Object>> result = new ArrayList<>();
 		List<Traits> traitDetails = traitsDao.findTraitByTraitId(traitId);
 		for (Traits t : traitDetails) {
-			List<TraitsValue> traitValuesList = traitsValueDao.findTraitsValue(t.getTraitId());
+			List<TraitsValue> traitValuesList = traitsValueDao.findTraitsValueByLanguage(t.getTraitId(),
+					t.getLanguageId());
 			Map<String, Object> details = new HashMap<>();
 			details.put("traits", t);
 			details.put("values", traitValuesList);

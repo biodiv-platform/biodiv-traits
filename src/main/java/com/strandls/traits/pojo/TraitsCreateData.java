@@ -6,26 +6,21 @@ package com.strandls.traits.pojo;
 import java.util.List;
 
 /**
- * @author Abhishek Rudra
+ * @author Mekala Rishitha Ravi
  *
  */
-public class TraitsValuePair {
+public class TraitsCreateData {
 
 	private Traits traits;
 	private List<TraitsValue> values;
+	private List<TraitTaxonomyDefinition> query;
 
 	/**
 	 * @param traits
 	 * @param values
 	 */
-
-	public TraitsValuePair() {
-	}
-
-	public TraitsValuePair(Traits traits, List<TraitsValue> values) {
+	public TraitsCreateData() {
 		super();
-		this.traits = traits;
-		this.values = values;
 	}
 
 	public Traits getTraits() {
@@ -42,6 +37,14 @@ public class TraitsValuePair {
 
 	public void setValues(List<TraitsValue> values) {
 		this.values = values;
+	}
+
+	public List<TraitTaxonomyDefinition> getQuery() {
+		return query;
+	}
+
+	public void setQuery(List<TraitTaxonomyDefinition> query) {
+		this.query = query;
 	}
 
 }

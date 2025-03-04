@@ -32,6 +32,8 @@ public class TraitsValue implements Serializable {
 	private String source;
 	private Boolean isDeleted;
 	private Long displayOrder;
+	private Long traitValueId;
+	private Long languageId;
 
 	@Id
 	@GeneratedValue
@@ -105,6 +107,24 @@ public class TraitsValue implements Serializable {
 
 	public void setIsDeleted(Boolean isDeleted) {
 		this.isDeleted = isDeleted;
+	}
+
+	@Column(name = "trait_value_id")
+	public Long getTraitValueId() {
+		return traitValueId;
+	}
+
+	public void setTraitValueId(Long traitValueId) {
+		this.traitValueId = traitValueId;
+	}
+
+	@Column(name = "language_id")
+	public Long getLanguageId() {
+		return languageId;
+	}
+
+	public void setLanguageId(Long languageId) {
+		this.languageId = languageId;
 	}
 
 }

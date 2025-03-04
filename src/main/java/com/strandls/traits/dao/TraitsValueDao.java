@@ -72,6 +72,26 @@ public class TraitsValueDao extends AbstractDAO<TraitsValue, Long> {
 	}
 
 	@SuppressWarnings("unchecked")
+	public List<TraitsValue> findTraitsValueByLanguage(Long traitId, Long languageId) {
+
+		String qry = "from TraitsValue where traitInstanceId = :traitId and languageId = :languageId and isDeleted = false";
+		Session session = sessionFactory.openSession();
+		List<TraitsValue> entity = null;
+		try {
+			Query<TraitsValue> query = session.createQuery(qry);
+			query.setParameter("traitId", traitId);
+			query.setParameter("languageId", languageId);
+			entity = query.getResultList();
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return entity;
+	}
+
+	@SuppressWarnings("unchecked")
 	public Map<Traits, List<TraitsValue>> findTraitValueList(Set<Long> traitSet, Boolean isObservation) {
 
 		String qry = "from Traits t left join TraitsValue tv on t.id = tv.traitInstanceId where t.id in (:traitSet) ";

@@ -14,6 +14,8 @@ import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
 import com.strandls.traits.pojo.FactsCreateData;
 import com.strandls.traits.pojo.FactsUpdateData;
+import com.strandls.traits.pojo.Traits;
+import com.strandls.traits.pojo.TraitsCreateData;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.pojo.TraitsValuePair;
 
@@ -31,11 +33,9 @@ public interface TraitsServices {
 
 	public List<TraitsValuePair> getObservationTraitList(Long speciesId);
 
-	public String createTraits(String dataType, String description, Long fieldId, String source, String name,
-			String traitTypes, String units, Boolean showInObservation, Boolean isParticipatory, String values,
-			String taxonIds, String icon, String min, String max);
+	public String createTraits(List<TraitsCreateData> traitsCreateData);
 
-	public String updateTraits(Long id, List<Map<String, Object>> list);
+	public String updateTraits(Long id, List<TraitsValuePair> traitsUpdateData);
 
 	public List<FactValuePair> createFacts(HttpServletRequest request, String objectType, Long objectId,
 			FactsCreateData factsCreateData);

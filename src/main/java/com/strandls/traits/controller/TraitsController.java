@@ -32,6 +32,7 @@ import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
 import com.strandls.traits.pojo.FactsCreateData;
 import com.strandls.traits.pojo.FactsUpdateData;
+import com.strandls.traits.pojo.TraitsCreateData;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.pojo.TraitsValuePair;
 import com.strandls.traits.services.TraitsServices;
@@ -81,22 +82,15 @@ public class TraitsController {
 
 	@POST
 	@Path(ApiConstants.TRAIT + ApiConstants.CREATE)
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "Create Trait", notes = "Creates trait with trait values and maps with taxon", response = TraitsValuePair.class, responseContainer = "List")
-	@ApiResponses(value = {
-			@ApiResponse(code = 400, message = "unable to create trait", response = String.class) })
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to create trait", response = String.class) })
 
-	public Response createTrait(@QueryParam("dataType") String dataType, @QueryParam("description") String description,
-			@QueryParam("name") String name, @QueryParam("traitTypes") String traitTypes,
-			@QueryParam("units") String units, @QueryParam("speciesField") String speciesField,
-			@QueryParam("source") String source, @QueryParam("showInObservation") Boolean showInObservation,
-			@QueryParam("isParticipatory") Boolean isParticipatory, @QueryParam("values") String values,
-			@QueryParam("taxonIds") String taxonIds, @QueryParam("icon") String icon, @QueryParam("min") String min,
-			@QueryParam("max") String max) {
+	public Response createTrait(@ApiParam(name = "traitsCreateData") List<TraitsCreateData> traitsCreateData) {
 		try {
-			String result = services.createTraits(dataType, description, Long.parseLong(speciesField), source, name,
-					traitTypes, units, showInObservation, isParticipatory, values, taxonIds, icon, min, max);
+			String result = services.createTraits(traitsCreateData);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -104,16 +98,17 @@ public class TraitsController {
 	}
 
 	@POST
-	@Path(ApiConstants.TRAIT + ApiConstants.UPDATE+ "/{traitId}")
+	@Path(ApiConstants.TRAIT + ApiConstants.UPDATE + "/{traitId}")
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "Update Trait", notes = "Updates the trait", response = TraitsValuePair.class, responseContainer = "List")
-	@ApiResponses(value = {
-			@ApiResponse(code = 400, message = "unable to update trait", response = String.class) })
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to update trait", response = String.class) })
 
-	public Response updateTrait(@PathParam("traitId") String traitId,@ApiParam(name = "translations") Map<String,List<Map<String,Object>>> translations) {
+	public Response updateTrait(@PathParam("traitId") String traitId,
+			@ApiParam(name = "traitsCreateData") List<TraitsValuePair> traitsUpdateData) {
 		try {
-			String result = services.updateTraits(Long.parseLong(traitId),translations.get("translations"));
+			String result = services.updateTraits(Long.parseLong(traitId), traitsUpdateData);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -210,10 +205,10 @@ public class TraitsController {
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "Find by traitId and languageId", notes = "Returns trait details", response = Facts.class, responseContainer = "List")
-	@ApiResponses(value = {
-			@ApiResponse(code = 400, message = "Couldn't get trait details", response = String.class) })
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Couldn't get trait details", response = String.class) })
 
-	public Response getTraitByTraitIdByLangId(@PathParam("traitId") String trtId, @PathParam("languageId") String langId) {
+	public Response getTraitByTraitIdByLangId(@PathParam("traitId") String trtId,
+			@PathParam("languageId") String langId) {
 		try {
 			Long traitId = Long.parseLong(trtId);
 			Long languageId = Long.parseLong(langId);
@@ -223,7 +218,7 @@ public class TraitsController {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
 	}
-	
+
 	@GET
 	@Path(ApiConstants.TRAIT + "/{traitId}")
 	@Consumes(MediaType.TEXT_PLAIN)
