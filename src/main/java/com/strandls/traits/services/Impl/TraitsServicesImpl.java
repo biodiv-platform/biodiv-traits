@@ -549,7 +549,7 @@ public class TraitsServicesImpl implements TraitsServices {
 		if (traitDetails.size() == 0) {
 			traitDetails = traitsDao.findTraitByTraitId(traitId);
 		}
-		List<TraitsValue> traitValuesList = traitsValueDao.findTraitsValueByLanguage(traitId, languageId);
+		List<TraitsValue> traitValuesList = traitsValueDao.findTraitsValueByLanguage(traitId, traitDetails.get(0).getLanguageId());
 		Map<String, Object> details = new HashMap<>();
 		details.put("traits", traitDetails.get(0));
 		details.put("values", traitValuesList);
