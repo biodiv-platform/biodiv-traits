@@ -180,18 +180,19 @@ public class TraitsController {
 	}
 
 	@GET
-	@Path(ApiConstants.SPECIESGROUPID + "/{speciesGroupId}")
+	@Path(ApiConstants.SPECIESGROUPID + "/{speciesGroupId}/{languageId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "Find all Trait Values pair for Specific SpeciesGroupId", notes = "Return the Key value pairs of Traits", response = TraitsValuePair.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Species Not Found", response = String.class) })
 
-	public Response getTraitList(@PathParam("speciesGroupId") String speciesGroupId) {
+	public Response getTraitList(@PathParam("speciesGroupId") String speciesGroupId, @PathParam("languageId") String languageId) {
 
 		try {
 			Long sGroup = Long.parseLong(speciesGroupId);
-			List<TraitsValuePair> result = services.getObservationTraitList(sGroup);
+			Long language = Long.parseLong(languageId);
+			List<TraitsValuePair> result = services.getObservationTraitList(sGroup, language);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
@@ -336,17 +337,18 @@ public class TraitsController {
 	}
 
 	@GET
-	@Path(ApiConstants.SPECIES + ApiConstants.TRAIT + "/{taxonId}")
+	@Path(ApiConstants.SPECIES + ApiConstants.TRAIT + "/{taxonId}/{languageId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "Species traits and value", notes = "Return all the species traits for that taxon", response = TraitsValuePair.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
 
-	public Response getSpeciesTraits(@PathParam("taxonId") String taxonId) {
+	public Response getSpeciesTraits(@PathParam("taxonId") String taxonId, @PathParam("languageId") String languageId) {
 		try {
 			Long taxonConceptId = Long.parseLong(taxonId);
-			List<TraitsValuePair> result = services.getSpeciesTraits(taxonConceptId);
+			Long language = Long.parseLong(languageId);
+			List<TraitsValuePair> result = services.getSpeciesTraits(taxonConceptId, language);
 			return Response.status(Status.OK).entity(result).build();
 
 		} catch (Exception e) {
@@ -355,15 +357,16 @@ public class TraitsController {
 	}
 
 	@GET
-	@Path(ApiConstants.SPECIES)
+	@Path(ApiConstants.SPECIES + "/{languageId}")
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "All Species traits and value", notes = "Return all the species traits", response = TraitsValuePair.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
 
-	public Response getAllSpeciesTraits() {
+	public Response getAllSpeciesTraits(@PathParam("languageId") String languageId) {
 		try {
-			List<TraitsValuePair> result = services.getAllSpeciesTraits();
+			Long language = Long.parseLong(languageId);
+			List<TraitsValuePair> result = services.getAllSpeciesTraits(language);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();

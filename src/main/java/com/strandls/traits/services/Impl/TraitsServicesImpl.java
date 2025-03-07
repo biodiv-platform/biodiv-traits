@@ -121,7 +121,7 @@ public class TraitsServicesImpl implements TraitsServices {
 		List<Long> allTraits = traitsDao.findAllObservationTrait();
 		Set<Long> traitSet = new HashSet<Long>();
 		traitSet.addAll(allTraits);
-		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true);
+		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true, (long) 193);
 
 		TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(new Comparator<Traits>() {
 
@@ -142,20 +142,20 @@ public class TraitsServicesImpl implements TraitsServices {
 	}
 
 	@Override
-	public List<TraitsValuePair> getAllSpeciesTraits() {
+	public List<TraitsValuePair> getAllSpeciesTraits(Long language) {
 
 		Set<Long> traitSet = new TreeSet<Long>();
 		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
 		List<Long> speciesTraits = traitsDao.findAllSpeciesTraits();
 
 		traitSet.addAll(speciesTraits);
-		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false);
+		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false, language);
 
 		TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(new Comparator<Traits>() {
 
 			@Override
 			public int compare(Traits o1, Traits o2) {
-				if (o1.getId() < o2.getId())
+				if (o1.getTraitId() < o2.getTraitId())
 					return -1;
 				return 1;
 			}
@@ -165,13 +165,14 @@ public class TraitsServicesImpl implements TraitsServices {
 		for (Traits traits : sorted.keySet()) {
 			traitValuePair.add(new TraitsValuePair(traits, traitValueMap.get(traits)));
 		}
+		
 
 		return traitValuePair;
 
 	}
 
 	@Override
-	public List<TraitsValuePair> getSpeciesTraits(Long taxonId) {
+	public List<TraitsValuePair> getSpeciesTraits(Long taxonId, Long language) {
 
 		Set<Long> traitSet = new TreeSet<Long>();
 		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
@@ -198,14 +199,14 @@ public class TraitsServicesImpl implements TraitsServices {
 
 //			get the values
 
-			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false);
+			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false, language);
 
 			TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(
 					new Comparator<Traits>() {
 
 						@Override
 						public int compare(Traits o1, Traits o2) {
-							if (o1.getId() < o2.getId())
+							if (o1.getTraitId() < o2.getTraitId())
 								return -1;
 							return 1;
 						}
@@ -226,7 +227,7 @@ public class TraitsServicesImpl implements TraitsServices {
 	}
 
 	@Override
-	public List<TraitsValuePair> getObservationTraitList(Long speciesGroupId) {
+	public List<TraitsValuePair> getObservationTraitList(Long speciesGroupId, Long languageId) {
 		List<Long> observationTrait = traitsDao.findAllObservationTrait();
 		List<TraitTaxonomyDefinition> taxonList = traitTaxonomyDef.findAllByTraitList(observationTrait); // trait id
 		List<Long> rootTrait = traitTaxonomyDef.findAllObservationRootTrait();
@@ -256,14 +257,14 @@ public class TraitsServicesImpl implements TraitsServices {
 				traitSet.add(trait);
 			}
 
-			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true);
+			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true, languageId);
 
 			TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(
 					new Comparator<Traits>() {
 
 						@Override
 						public int compare(Traits o1, Traits o2) {
-							if (o1.getId() < o2.getId())
+							if (o1.getTraitId() < o2.getTraitId())
 								return -1;
 							return 1;
 						}

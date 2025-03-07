@@ -31,7 +31,7 @@ public interface TraitsServices {
 
 	public List<TraitsValuePair> getAllObservationTraits();
 
-	public List<TraitsValuePair> getObservationTraitList(Long speciesId);
+	public List<TraitsValuePair> getObservationTraitList(Long speciesId, Long language);
 
 	public String createTraits(List<TraitsCreateData> traitsCreateData);
 
@@ -54,9 +54,9 @@ public interface TraitsServices {
 	public List<FactValuePair> updateTraits(HttpServletRequest request, String objectType, Long objectId, Long traitId,
 			FactsUpdateData factsUpdateData);
 
-	public List<TraitsValuePair> getSpeciesTraits(Long taxonId);
+	public List<TraitsValuePair> getSpeciesTraits(Long taxonId, Long language);
 
-	public List<TraitsValuePair> getAllSpeciesTraits();
+	public List<TraitsValuePair> getAllSpeciesTraits(Long language);
 
 	public List<Map<String, String>> importSpeciesTraits(FormDataBodyPart file, List<String> traits,
 			String scientificNameColumn, String taxonColumn, String speciesIdColumn, String contributorColumn,
