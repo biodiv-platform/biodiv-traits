@@ -94,7 +94,7 @@ public class TraitsValueDao extends AbstractDAO<TraitsValue, Long> {
 	@SuppressWarnings("unchecked")
 	public Map<Traits, List<TraitsValue>> findTraitValueList(Set<Long> traitSet, Boolean isObservation, Long language) {
 
-	    String qry = "from Traits t left join TraitsValue tv on t.traitId = tv.traitInstanceId and t.languageId = tv.languageId where t.id in (:traitSet) ";
+	    String qry = "from Traits t left join TraitsValue tv on t.traitId = tv.traitInstanceId and t.languageId = tv.languageId where t.traitId in (:traitSet) ";
 
 	    if (isObservation)
 	        qry = qry + "and t.showInObservation = TRUE";
@@ -116,7 +116,7 @@ public class TraitsValueDao extends AbstractDAO<TraitsValue, Long> {
 	            if (!seenTraitIds.containsKey(traitId)) {
 	                // First occurrence, add it
 	                seenTraitIds.put(traitId, traits);
-	            } else if (traits.getLanguageId().equals(language)) { // Replaced 205 with language
+	            } else if (traits.getLanguageId().equals(language)) {
 	                if (!seenTraitIds.get(traitId).getLanguageId().equals(language)) {
 	                    traitValueMap.remove(seenTraitIds.get(traitId));
 	                }

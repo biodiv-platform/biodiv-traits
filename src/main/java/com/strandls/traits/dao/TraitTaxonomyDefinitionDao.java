@@ -84,7 +84,7 @@ public class TraitTaxonomyDefinitionDao extends AbstractDAO<TraitTaxonomyDefinit
 
 	@SuppressWarnings("unchecked")
 	public List<Long> findAllObservationRootTrait() {
-		String qry = "select t.id from Traits t left join TraitTaxonomyDefinition ttd on ttd.traitTaxonId = t.id where t.showInObservation = true and ttd.taxonomyDefifintionId is NULL and t.isDeleted = FALSE";
+		String qry = "select t.traitId from Traits t left join TraitTaxonomyDefinition ttd on ttd.traitTaxonId = t.traitId where t.showInObservation = true and ttd.taxonomyDefifintionId is NULL and t.isDeleted = FALSE";
 		Session session = sessionFactory.openSession();
 		List<Long> resultList = new ArrayList<Long>();
 
@@ -103,7 +103,7 @@ public class TraitTaxonomyDefinitionDao extends AbstractDAO<TraitTaxonomyDefinit
 
 	@SuppressWarnings("unchecked")
 	public List<Long> findAllSpeciesRootTraits() {
-		String qry = "select t.id from Traits t left join TraitTaxonomyDefinition ttd on ttd.traitTaxonId = t.id where t.isNotObservationTraits = true and ttd.taxonomyDefifintionId is NULL and t.isDeleted = FALSE";
+		String qry = "select t.traitId from Traits t left join TraitTaxonomyDefinition ttd on ttd.traitTaxonId = t.traitId where t.isNotObservationTraits = true and ttd.taxonomyDefifintionId is NULL and t.isDeleted = FALSE";
 		Session session = sessionFactory.openSession();
 		List<Long> resultList = new ArrayList<Long>();
 

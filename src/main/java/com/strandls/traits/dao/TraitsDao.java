@@ -50,7 +50,7 @@ public class TraitsDao extends AbstractDAO<Traits, Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Long> findAllObservationTrait() {
-		String qry = "select t.id from Traits t where showInObservation = TRUE and isDeleted = FALSE";
+		String qry = "select t.traitId from Traits t where showInObservation = TRUE and isDeleted = FALSE";
 		Session session = sessionFactory.openSession();
 		List<Long> result = new ArrayList<Long>();
 		try {
@@ -67,7 +67,7 @@ public class TraitsDao extends AbstractDAO<Traits, Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Long> findSpeciesTraitFromList(Set<Long> traitList) {
-		String qry = "select id from Traits where showInObservation = FALSE and isDeleted = FALSE and id in :traitList";
+		String qry = "select traitId from Traits where showInObservation = FALSE and isDeleted = FALSE and id in :traitList";
 		Session session = sessionFactory.openSession();
 		List<Long> result = new ArrayList<Long>();
 		try {
@@ -85,7 +85,7 @@ public class TraitsDao extends AbstractDAO<Traits, Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Long> findAllSpeciesTraits() {
-		String qry = "select id from Traits where showInObservation = FALSE and isDeleted = FALSE";
+		String qry = "select traitId from Traits where showInObservation = FALSE and isDeleted = FALSE";
 		Session session = sessionFactory.openSession();
 		List<Long> result = new ArrayList<Long>();
 		try {
