@@ -101,6 +101,23 @@ public class TraitsDao extends AbstractDAO<Traits, Long> {
 	}
 	
 	@SuppressWarnings("unchecked")
+	public List<Long> findAllTraitsList() {
+		String qry = "select traitId from Traits where isDeleted = FALSE";
+		Session session = sessionFactory.openSession();
+		List<Long> result = new ArrayList<Long>();
+		try {
+			Query<Long> query = session.createQuery(qry);
+			result = query.getResultList();
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return result;
+	}
+	
+	@SuppressWarnings("unchecked")
 	public List<Traits> findTraitByTraitIdAndLanguageId(Long traitId, Long languageId) {
 		String qry = "from Traits t where t.traitId = :traitId and t.languageId = :languageId";
 		Session session = sessionFactory.openSession();

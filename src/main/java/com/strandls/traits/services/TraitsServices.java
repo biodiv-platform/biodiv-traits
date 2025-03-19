@@ -35,7 +35,7 @@ public interface TraitsServices {
 
 	public String createTraits(List<TraitsCreateData> traitsCreateData);
 
-	public String updateTraits(Long id, List<TraitsValuePair> traitsUpdateData);
+	public String updateTraits(Long id, List<TraitsCreateData> traitsUpdateData);
 
 	public List<FactValuePair> createFacts(HttpServletRequest request, String objectType, Long objectId,
 			FactsCreateData factsCreateData);
@@ -53,6 +53,8 @@ public interface TraitsServices {
 
 	public List<FactValuePair> updateTraits(HttpServletRequest request, String objectType, Long objectId, Long traitId,
 			FactsUpdateData factsUpdateData);
+	
+	public List<TraitsValuePair> getAllTraits(Long language);
 
 	public List<TraitsValuePair> getSpeciesTraits(Long taxonId, Long language);
 

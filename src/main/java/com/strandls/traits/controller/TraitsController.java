@@ -106,7 +106,7 @@ public class TraitsController {
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to update trait", response = String.class) })
 
 	public Response updateTrait(@PathParam("traitId") String traitId,
-			@ApiParam(name = "traitsCreateData") List<TraitsValuePair> traitsUpdateData) {
+			@ApiParam(name = "traitsCreateData") List<TraitsCreateData> traitsUpdateData) {
 		try {
 			String result = services.updateTraits(Long.parseLong(traitId), traitsUpdateData);
 			return Response.status(Status.OK).entity(result).build();
@@ -367,6 +367,23 @@ public class TraitsController {
 		try {
 			Long language = Long.parseLong(languageId);
 			List<TraitsValuePair> result = services.getAllSpeciesTraits(language);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+	
+	@GET
+	@Path(ApiConstants.LIST + "/{languageId}")
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "All Species traits and value", notes = "Return all the species traits", response = TraitsValuePair.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
+
+	public Response getAllTraitsList(@PathParam("languageId") String languageId) {
+		try {
+			Long language = Long.parseLong(languageId);
+			List<TraitsValuePair> result = services.getAllTraits(language);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();

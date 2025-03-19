@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,13 +40,16 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.strandls.activity.pojo.MailData;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.taxonomy.controllers.SpeciesServicesApi;
 import com.strandls.taxonomy.controllers.TaxonomyTreeServicesApi;
+import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
 import com.strandls.esmodule.ApiException;
 import com.strandls.esmodule.controllers.EsServicesApi;
 import com.strandls.taxonomy.pojo.BreadCrumb;
+import com.strandls.taxonomy.pojo.TaxonomyDefinition;
 import com.strandls.traits.dao.FactsDAO;
 import com.strandls.traits.dao.TraitTaxonomyDefinitionDao;
 import com.strandls.traits.dao.TraitsDao;
@@ -91,6 +95,9 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Inject
 	private SpeciesServicesApi speciesService;
+	
+	@Inject 
+	private TaxonomyServicesApi taxonomyService;
 
 	@Inject
 	private EsServicesApi esService;
@@ -139,6 +146,35 @@ public class TraitsServicesImpl implements TraitsServices {
 		}
 
 		return traitValuePair;
+	}
+	
+	@Override
+	public List<TraitsValuePair> getAllTraits(Long language) {
+
+		Set<Long> traitSet = new TreeSet<Long>();
+		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
+		List<Long> speciesTraits = traitsDao.findAllTraitsList();
+
+		traitSet.addAll(speciesTraits);
+		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false, language);
+
+		TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(new Comparator<Traits>() {
+
+			@Override
+			public int compare(Traits o1, Traits o2) {
+				if (o1.getTraitId() < o2.getTraitId())
+					return -1;
+				return 1;
+			}
+		});
+		sorted.putAll(traitValueMap);
+
+		for (Traits traits : sorted.keySet()) {
+			traitValuePair.add(new TraitsValuePair(traits, traitValueMap.get(traits)));
+		}
+
+		return traitValuePair;
+
 	}
 
 	@Override
@@ -282,9 +318,9 @@ public class TraitsServicesImpl implements TraitsServices {
 	}
 
 	@Override
-	public String updateTraits(Long id, List<TraitsValuePair> translations) {
+	public String updateTraits(Long id, List<TraitsCreateData> translations) {
 		List<Long> traitValueIds = new ArrayList<>();
-		for (TraitsValuePair translation : translations) {
+		for (TraitsCreateData translation : translations) {
 			if (translation.getTraits().getId() != null) {
 				Traits trait = traitsDao.findById(translation.getTraits().getId());
 				trait.setDescription(translation.getTraits().getDescription());
@@ -366,6 +402,16 @@ public class TraitsServicesImpl implements TraitsServices {
 				}
 				index = index + 1;
 			}
+		}
+		List<TraitTaxonomyDefinition> existingTaxon = traitTaxonomyDef.findAllByTraitList(Arrays.asList(id));
+		for(TraitTaxonomyDefinition taxonDetails: existingTaxon) {
+			traitTaxonomyDef.delete(taxonDetails);
+		}
+		for (TraitTaxonomyDefinition taxon : translations.get(0).getQuery()) {
+			TraitTaxonomyDefinition taxonId = new TraitTaxonomyDefinition();
+			taxonId.setTraitTaxonId(id);
+			taxonId.setTaxonomyDefifintionId(taxon.getTaxonomyDefifintionId());
+			traitTaxonomyDef.save(taxonId);
 		}
 		return translations.toString();
 	}
@@ -469,6 +515,7 @@ public class TraitsServicesImpl implements TraitsServices {
 
 //			To handle traits with User Entered Values
 			for (Entry<Long, List<String>> entry : factsCreateData.getFactValueString().entrySet()) {
+				System.out.print(entry);
 				Traits traits = traitsDao.findById(entry.getKey());
 
 				String attribution = userName;
@@ -561,12 +608,27 @@ public class TraitsServicesImpl implements TraitsServices {
 	public List<Map<String, Object>> fetchByTraitId(Long traitId) {
 		List<Map<String, Object>> result = new ArrayList<>();
 		List<Traits> traitDetails = traitsDao.findTraitByTraitId(traitId);
+		List<TraitTaxonomyDefinition> taxon = traitTaxonomyDef.findAllByTraitList(Arrays.asList(traitId));
+		List<TaxonomyDefinition> taxonRes = new ArrayList();
+		 TreeSet<Long> treeSet = new TreeSet<>();
+		 for (TraitTaxonomyDefinition num : taxon) {
+	            treeSet.add(num.getTaxonomyDefifintionId());
+	        }	
+		 for (Long t:treeSet) {
+			 try {
+				taxonRes.add(taxonomyService.getTaxonomyConceptName(t.toString()));
+			} catch (com.strandls.taxonomy.ApiException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		 }
 		for (Traits t : traitDetails) {
 			List<TraitsValue> traitValuesList = traitsValueDao.findTraitsValueByLanguage(t.getTraitId(),
 					t.getLanguageId());
 			Map<String, Object> details = new HashMap<>();
 			details.put("traits", t);
 			details.put("values", traitValuesList);
+			details.put("taxon", taxonRes);
 			result.add(details);
 		}
 		return result;
@@ -588,11 +650,14 @@ public class TraitsServicesImpl implements TraitsServices {
 		try {
 			Object SpeciesEs = esService.fetch("extended_species", "_doc", objectId.toString()).getDocument();
 			ObjectMapper objectMapper = new ObjectMapper();
+
 			if (SpeciesEs instanceof String) {
 				// Parse the JSON string
 				String speciesEsJson = (String) SpeciesEs;
 				JsonNode rootNode = objectMapper.readTree(speciesEsJson);
-				List<Map<String, Object>> factsEs = objectMapper.convertValue(rootNode.get("facts"), List.class);
+				List<Map<String, Object>> factsEs = objectMapper.convertValue(
+			            rootNode.get("facts"), new TypeReference<List<Map<String, Object>>>() {}
+			        );
 				if (factsEs == null) {
 					factsEs = new ArrayList<>();
 				}
@@ -1052,7 +1117,7 @@ public class TraitsServicesImpl implements TraitsServices {
 														&& pojo.getValue().equals(fact.trim()))
 												.findFirst();
 										if (firstMatch.isPresent()) {
-											finalFact = finalFact + firstMatch.get().getId() + "|"
+											finalFact = finalFact + firstMatch.get().getTraitValueId() + "|"
 													+ firstMatch.get().getValue() + "|" + firstMatch.get().getIcon()
 													+ ",";
 										} else {
@@ -1060,7 +1125,7 @@ public class TraitsServicesImpl implements TraitsServices {
 										}
 									}
 									rowData.put(headers.get(i) + "|true|STRING|"
-											+ traits.get(String.valueOf(i)).getTraits().getId(), finalFact);
+											+ traits.get(String.valueOf(i)).getTraits().getTraitId(), finalFact);
 								} else if (traits.get(String.valueOf(i)).getTraits().getDataType().equals("COLOR")) {
 									String[] facts = row.getCell(i).toString().split(",");
 									String finalFact = "";
@@ -1077,7 +1142,7 @@ public class TraitsServicesImpl implements TraitsServices {
 										finalFact = finalFact + "rgb(" + r + ", " + g + ", " + b + ")" + "|";
 									}
 									rowData.put(headers.get(i) + "|true|COLOR|"
-											+ traits.get(String.valueOf(i)).getTraits().getId(), finalFact);
+											+ traits.get(String.valueOf(i)).getTraits().getTraitId(), finalFact);
 								} else {
 									String headerValue = headers.get(i);
 									String cellValue = row.getCell(i).toString();
@@ -1087,7 +1152,7 @@ public class TraitsServicesImpl implements TraitsServices {
 									}
 									rowData.put(headerValue + "|true|"
 											+ traits.get(String.valueOf(i)).getTraits().getDataType() + "|"
-											+ traits.get(String.valueOf(i)).getTraits().getId(), cellValue);
+											+ traits.get(String.valueOf(i)).getTraits().getTraitId(), cellValue);
 								}
 							} else {
 								if (String.valueOf(i).equals(scientificNameColumn)) {
@@ -1108,7 +1173,7 @@ public class TraitsServicesImpl implements TraitsServices {
 							}
 						} else {
 							rowData.put(headers.get(i) + (traits.containsKey(String.valueOf(i))
-									? "|true|" + traits.get(String.valueOf(i)).getTraits().getId()
+									? "|true|" + traits.get(String.valueOf(i)).getTraits().getTraitId()
 									: ""), null);
 						}
 					}
