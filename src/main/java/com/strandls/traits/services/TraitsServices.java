@@ -53,7 +53,7 @@ public interface TraitsServices {
 
 	public List<FactValuePair> updateTraits(HttpServletRequest request, String objectType, Long objectId, Long traitId,
 			FactsUpdateData factsUpdateData);
-	
+
 	public List<TraitsValuePair> getAllTraits(Long language);
 
 	public List<TraitsValuePair> getSpeciesTraits(Long taxonId, Long language);
@@ -65,5 +65,7 @@ public interface TraitsServices {
 			String attributionColumn, String licenseColumn);
 
 	public List<Map<String, Object>> fetchByTraitId(Long traitId);
+
+	public List<Traits> getAllTraitsNames();
 
 }

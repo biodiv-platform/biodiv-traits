@@ -99,7 +99,7 @@ public class TraitsDao extends AbstractDAO<Traits, Long> {
 		}
 		return result;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public List<Long> findAllTraitsList() {
 		String qry = "select traitId from Traits where isDeleted = FALSE";
@@ -116,7 +116,7 @@ public class TraitsDao extends AbstractDAO<Traits, Long> {
 		}
 		return result;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public List<Traits> findTraitByTraitIdAndLanguageId(Long traitId, Long languageId) {
 		String qry = "from Traits t where t.traitId = :traitId and t.languageId = :languageId";
@@ -135,7 +135,7 @@ public class TraitsDao extends AbstractDAO<Traits, Long> {
 
 		return result;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public List<Traits> findTraitByTraitId(Long traitId) {
 		String qry = "from Traits t where t.traitId = :traitId";
@@ -144,6 +144,23 @@ public class TraitsDao extends AbstractDAO<Traits, Long> {
 		try {
 			Query<Traits> query = session.createQuery(qry);
 			query.setParameter("traitId", traitId);
+			result = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Traits> findTraitNames() {
+		String qry = "from Traits t WHERE t.showInObservation = FALSE and t.isDeleted = FALSE ORDER BY t.name ASC";
+		Session session = sessionFactory.openSession();
+		List<Traits> result = new ArrayList<Traits>();
+		try {
+			Query<Traits> query = session.createQuery(qry);
 			result = query.getResultList();
 		} catch (Exception e) {
 			logger.error(e.getMessage());

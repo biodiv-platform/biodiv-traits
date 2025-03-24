@@ -95,8 +95,8 @@ public class TraitsServicesImpl implements TraitsServices {
 
 	@Inject
 	private SpeciesServicesApi speciesService;
-	
-	@Inject 
+
+	@Inject
 	private TaxonomyServicesApi taxonomyService;
 
 	@Inject
@@ -147,7 +147,14 @@ public class TraitsServicesImpl implements TraitsServices {
 
 		return traitValuePair;
 	}
-	
+
+	public List<Traits> getAllTraitsNames() {
+
+		List<Traits> allTraits = traitsDao.findTraitNames();
+
+		return allTraits;
+	}
+
 	@Override
 	public List<TraitsValuePair> getAllTraits(Long language) {
 
@@ -201,7 +208,6 @@ public class TraitsServicesImpl implements TraitsServices {
 		for (Traits traits : sorted.keySet()) {
 			traitValuePair.add(new TraitsValuePair(traits, traitValueMap.get(traits)));
 		}
-		
 
 		return traitValuePair;
 
@@ -293,7 +299,8 @@ public class TraitsServicesImpl implements TraitsServices {
 				traitSet.add(trait);
 			}
 
-			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true, languageId);
+			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true,
+					languageId);
 
 			TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(
 					new Comparator<Traits>() {
@@ -404,7 +411,7 @@ public class TraitsServicesImpl implements TraitsServices {
 			}
 		}
 		List<TraitTaxonomyDefinition> existingTaxon = traitTaxonomyDef.findAllByTraitList(Arrays.asList(id));
-		for(TraitTaxonomyDefinition taxonDetails: existingTaxon) {
+		for (TraitTaxonomyDefinition taxonDetails : existingTaxon) {
 			traitTaxonomyDef.delete(taxonDetails);
 		}
 		for (TraitTaxonomyDefinition taxon : translations.get(0).getQuery()) {
@@ -537,8 +544,8 @@ public class TraitsServicesImpl implements TraitsServices {
 					for (String range : entry.getValue()) {
 						String[] value = range.split(":");
 						Facts facts = new Facts(null, attribution, userId, false, defaultLicenseId, objectId,
-								factsCreateData.getPageTaxonId(), entry.getKey(), null, value[0], objectType, value[1],
-								null, null);
+								factsCreateData.getPageTaxonId(), entry.getKey(), null, value[0].trim(), objectType,
+								value[1].trim(), null, null);
 						String description = traits.getName() + ":" + range;
 
 						saveUpdateFacts(request, objectType, objectId, facts, description,
@@ -597,7 +604,8 @@ public class TraitsServicesImpl implements TraitsServices {
 		if (traitDetails.size() == 0) {
 			traitDetails = traitsDao.findTraitByTraitId(traitId);
 		}
-		List<TraitsValue> traitValuesList = traitsValueDao.findTraitsValueByLanguage(traitId, traitDetails.get(0).getLanguageId());
+		List<TraitsValue> traitValuesList = traitsValueDao.findTraitsValueByLanguage(traitId,
+				traitDetails.get(0).getLanguageId());
 		Map<String, Object> details = new HashMap<>();
 		details.put("traits", traitDetails.get(0));
 		details.put("values", traitValuesList);
@@ -609,19 +617,19 @@ public class TraitsServicesImpl implements TraitsServices {
 		List<Map<String, Object>> result = new ArrayList<>();
 		List<Traits> traitDetails = traitsDao.findTraitByTraitId(traitId);
 		List<TraitTaxonomyDefinition> taxon = traitTaxonomyDef.findAllByTraitList(Arrays.asList(traitId));
-		List<TaxonomyDefinition> taxonRes = new ArrayList();
-		 TreeSet<Long> treeSet = new TreeSet<>();
-		 for (TraitTaxonomyDefinition num : taxon) {
-	            treeSet.add(num.getTaxonomyDefifintionId());
-	        }	
-		 for (Long t:treeSet) {
-			 try {
+		List<TaxonomyDefinition> taxonRes = new ArrayList<>();
+		TreeSet<Long> treeSet = new TreeSet<>();
+		for (TraitTaxonomyDefinition num : taxon) {
+			treeSet.add(num.getTaxonomyDefifintionId());
+		}
+		for (Long t : treeSet) {
+			try {
 				taxonRes.add(taxonomyService.getTaxonomyConceptName(t.toString()));
 			} catch (com.strandls.taxonomy.ApiException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		 }
+		}
 		for (Traits t : traitDetails) {
 			List<TraitsValue> traitValuesList = traitsValueDao.findTraitsValueByLanguage(t.getTraitId(),
 					t.getLanguageId());
@@ -655,9 +663,9 @@ public class TraitsServicesImpl implements TraitsServices {
 				// Parse the JSON string
 				String speciesEsJson = (String) SpeciesEs;
 				JsonNode rootNode = objectMapper.readTree(speciesEsJson);
-				List<Map<String, Object>> factsEs = objectMapper.convertValue(
-			            rootNode.get("facts"), new TypeReference<List<Map<String, Object>>>() {}
-			        );
+				List<Map<String, Object>> factsEs = objectMapper.convertValue(rootNode.get("facts"),
+						new TypeReference<List<Map<String, Object>>>() {
+						});
 				if (factsEs == null) {
 					factsEs = new ArrayList<>();
 				}
@@ -1112,9 +1120,12 @@ public class TraitsServicesImpl implements TraitsServices {
 									String finalFact = "";
 									String[] facts = row.getCell(i).toString().split(",");
 									for (String fact : facts) {
+										Long language = traits.get(String.valueOf(i)).getTraits().getLanguageId();
 										Optional<TraitsValue> firstMatch = traits.get(String.valueOf(i)).getValues()
-												.stream().filter(pojo -> pojo.getValue() != null
-														&& pojo.getValue().equals(fact.trim()))
+												.stream()
+												.filter(pojo -> pojo.getValue() != null
+														&& pojo.getValue().equals(fact.trim())
+														&& pojo.getLanguageId().equals(language))
 												.findFirst();
 										if (firstMatch.isPresent()) {
 											finalFact = finalFact + firstMatch.get().getTraitValueId() + "|"
@@ -1124,8 +1135,10 @@ public class TraitsServicesImpl implements TraitsServices {
 											finalFact = finalFact + "NoMatch|" + fact + ",";
 										}
 									}
-									rowData.put(headers.get(i) + "|true|STRING|"
-											+ traits.get(String.valueOf(i)).getTraits().getTraitId(), finalFact);
+									rowData.put(
+											headers.get(i) + "|true|STRING|"
+													+ traits.get(String.valueOf(i)).getTraits().getTraitId(),
+											finalFact);
 								} else if (traits.get(String.valueOf(i)).getTraits().getDataType().equals("COLOR")) {
 									String[] facts = row.getCell(i).toString().split(",");
 									String finalFact = "";
@@ -1141,8 +1154,10 @@ public class TraitsServicesImpl implements TraitsServices {
 
 										finalFact = finalFact + "rgb(" + r + ", " + g + ", " + b + ")" + "|";
 									}
-									rowData.put(headers.get(i) + "|true|COLOR|"
-											+ traits.get(String.valueOf(i)).getTraits().getTraitId(), finalFact);
+									rowData.put(
+											headers.get(i) + "|true|COLOR|"
+													+ traits.get(String.valueOf(i)).getTraits().getTraitId(),
+											finalFact);
 								} else {
 									String headerValue = headers.get(i);
 									String cellValue = row.getCell(i).toString();
@@ -1150,9 +1165,11 @@ public class TraitsServicesImpl implements TraitsServices {
 										cellValue = cellValue + "|"
 												+ row.getCell(headers.indexOf(headerValue + " units")).toString();
 									}
-									rowData.put(headerValue + "|true|"
-											+ traits.get(String.valueOf(i)).getTraits().getDataType() + "|"
-											+ traits.get(String.valueOf(i)).getTraits().getTraitId(), cellValue);
+									rowData.put(
+											headerValue + "|true|"
+													+ traits.get(String.valueOf(i)).getTraits().getDataType() + "|"
+													+ traits.get(String.valueOf(i)).getTraits().getTraitId(),
+											cellValue);
 								}
 							} else {
 								if (String.valueOf(i).equals(scientificNameColumn)) {
