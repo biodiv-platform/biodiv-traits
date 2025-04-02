@@ -115,7 +115,7 @@ public class TraitsController {
 		}
 	}
 
-	@POST
+	@PUT
 	@Path(ApiConstants.TRAIT + ApiConstants.UPDATE + "/{traitId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -319,12 +319,12 @@ public class TraitsController {
 	@ApiOperation(value = "Adds new Traits", notes = "Returns the list of allTraitValue Pair", response = FactValuePair.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Unable to edit the Traits", response = String.class) })
 
-	public Response addNewTraits(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
+	public Response bulkTraitsUpdate(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
 			@PathParam("objectId") String objectId, @ApiParam(name = "factsAddData") Map<String, List> factsAddData,
 			@QueryParam("userId") String userId, @QueryParam("taxonId") String taxonId) {
 		try {
 			Long objId = Long.parseLong(objectId);
-			String result = services.addNewTraits(request, objectType, objId, factsAddData, userId, taxonId);
+			String result = services.bulkTraitsUpdate(request, objectType, objId, factsAddData, userId, taxonId);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -409,7 +409,7 @@ public class TraitsController {
 		}
 	}
 
-	@Path("upload/batch-upload")
+	@Path(ApiConstants.UPLOAD + ApiConstants.BATCH)
 	@POST
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	@Produces(MediaType.APPLICATION_JSON)

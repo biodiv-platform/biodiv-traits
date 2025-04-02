@@ -653,7 +653,7 @@ public class TraitsServicesImpl implements TraitsServices {
 	}
 
 	@Override
-	public String addNewTraits(HttpServletRequest request, String objectType, Long objectId,
+	public String bulkTraitsUpdate(HttpServletRequest request, String objectType, Long objectId,
 			Map<String, List> factsAddData, String userId, String taxonId) {
 		try {
 			Object SpeciesEs = esService.fetch("extended_species", "_doc", objectId.toString()).getDocument();

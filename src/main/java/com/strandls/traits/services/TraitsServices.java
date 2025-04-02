@@ -48,7 +48,7 @@ public interface TraitsServices {
 
 	public List<TraitsValue> fetchTraitsValue(Long traitId);
 
-	public String addNewTraits(HttpServletRequest request, String objectType, Long objectId,
+	public String bulkTraitsUpdate(HttpServletRequest request, String objectType, Long objectId,
 			Map<String, List> factsAddData, String userId, String taxonId);
 
 	public List<FactValuePair> updateTraits(HttpServletRequest request, String objectType, Long objectId, Long traitId,
