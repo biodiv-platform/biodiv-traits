@@ -900,23 +900,19 @@ public class TraitsServicesImpl implements TraitsServices {
 				}
 				Map<String, Object> fields = new HashMap<>();
 				fields.put("facts", factsEs);
-				String updateContent = objectMapper.writeValueAsString(fields);
-				esService.updateEsField("extended_species", objectId.toString(), updateContent);
+				esService.update("extended_species","doc", objectId.toString(), fields);
 				return factsEs.toString();
 			}
 
 			return SpeciesEs.toString();
 		} catch (ApiException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			return e.toString();
 		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			return e.toString();
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			return e.toString();
 		}
 
@@ -1200,8 +1196,7 @@ public class TraitsServicesImpl implements TraitsServices {
 			workbook.close();
 			return values;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			return new ArrayList<>();
 		}
 	}
