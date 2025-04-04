@@ -4,6 +4,7 @@
 package com.strandls.traits.pojo;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,6 +25,8 @@ public class Traits implements Serializable {
 	 */
 	private static final long serialVersionUID = -7750012729432714454L;
 	private Long id;
+	private Date createdOn;
+	private Date lastRevised;
 	private String dataType;
 	private String description;
 	private Long fieldId;
@@ -35,6 +38,9 @@ public class Traits implements Serializable {
 	private Boolean isParticipatory;
 	private Boolean isDeleted;
 	private String source;
+	private String icon;
+	private Long traitId;
+	private Long languageId;
 
 	@Id
 	@GeneratedValue
@@ -45,6 +51,24 @@ public class Traits implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	@Column(name = "created_on")
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	@Column(name = "last_revised")
+	public Date getLastRevised() {
+		return lastRevised;
+	}
+
+	public void setLastRevised(Date lastRevised) {
+		this.lastRevised = lastRevised;
 	}
 
 	@Column(name = "data_types")
@@ -128,6 +152,15 @@ public class Traits implements Serializable {
 		this.source = source;
 	}
 
+	@Column(name = "icon")
+	public String getIcon() {
+		return icon;
+	}
+
+	public void setIcon(String icon) {
+		this.icon = icon;
+	}
+
 	@Column(name = "units")
 	public String getUnits() {
 		return units;
@@ -144,6 +177,24 @@ public class Traits implements Serializable {
 
 	public void setIsNotObservationTraits(Boolean isNotObservationTraits) {
 		this.isNotObservationTraits = isNotObservationTraits;
+	}
+	
+	@Column(name = "trait_id")
+	public Long getTraitId() {
+		return traitId;
+	}
+
+	public void setTraitId(Long traitId) {
+		this.traitId = traitId;
+	}
+	
+	@Column(name = "language_id")
+	public Long getLanguageId() {
+		return languageId;
+	}
+
+	public void setLanguageId(Long languageId) {
+		this.languageId = languageId;
 	}
 
 }

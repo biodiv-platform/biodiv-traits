@@ -3,7 +3,9 @@
  */
 package com.strandls.traits.controller;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -20,12 +22,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+
 import com.strandls.authentication_utility.filter.ValidateUser;
+import com.strandls.taxonomy.pojo.FileMetadata;
 import com.strandls.traits.ApiConstants;
 import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
 import com.strandls.traits.pojo.FactsCreateData;
 import com.strandls.traits.pojo.FactsUpdateData;
+import com.strandls.traits.pojo.Traits;
+import com.strandls.traits.pojo.TraitsCreateData;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.pojo.TraitsValuePair;
 import com.strandls.traits.services.TraitsServices;
@@ -67,6 +75,58 @@ public class TraitsController {
 	public Response getAllTraits() {
 		try {
 			List<TraitsValuePair> result = services.getAllObservationTraits();
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.TRAIT + ApiConstants.LIST)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Fetch all the Traits Names", notes = "Returns all the traits", response = TraitsValuePair.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "unable to fetch all the traits", response = String.class) })
+
+	public Response getAllTraitsNames() {
+		try {
+			List<Traits> result = services.getAllTraitsNames();
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@POST
+	@Path(ApiConstants.TRAIT + ApiConstants.CREATE)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Create Trait", notes = "Creates trait with trait values and maps with taxon", response = TraitsValuePair.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to create trait", response = String.class) })
+
+	public Response createTrait(@ApiParam(name = "traitsCreateData") List<TraitsCreateData> traitsCreateData) {
+		try {
+			String result = services.createTraits(traitsCreateData);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@PUT
+	@Path(ApiConstants.TRAIT + ApiConstants.UPDATE + "/{traitId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Update Trait", notes = "Updates the trait", response = TraitsValuePair.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to update trait", response = String.class) })
+
+	public Response updateTrait(@PathParam("traitId") String traitId,
+			@ApiParam(name = "traitsCreateData") List<TraitsCreateData> traitsUpdateData) {
+		try {
+			String result = services.updateTraits(Long.parseLong(traitId), traitsUpdateData);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -138,23 +198,64 @@ public class TraitsController {
 	}
 
 	@GET
-	@Path(ApiConstants.SPECIESGROUPID + "/{speciesGroupId}")
+	@Path(ApiConstants.SPECIESGROUPID + "/{speciesGroupId}/{languageId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "Find all Trait Values pair for Specific SpeciesGroupId", notes = "Return the Key value pairs of Traits", response = TraitsValuePair.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Species Not Found", response = String.class) })
 
-	public Response getTraitList(@PathParam("speciesGroupId") String speciesGroupId) {
+	public Response getTraitList(@PathParam("speciesGroupId") String speciesGroupId,
+			@PathParam("languageId") String languageId) {
 
 		try {
 			Long sGroup = Long.parseLong(speciesGroupId);
-			List<TraitsValuePair> result = services.getObservationTraitList(sGroup);
+			Long language = Long.parseLong(languageId);
+			List<TraitsValuePair> result = services.getObservationTraitList(sGroup, language);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
 
+	}
+
+	@GET
+	@Path(ApiConstants.TRAIT + "/{traitId}/{languageId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find by traitId and languageId", notes = "Returns trait details", response = Facts.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Couldn't get trait details", response = String.class) })
+
+	public Response getTraitByTraitIdByLangId(@PathParam("traitId") String trtId,
+			@PathParam("languageId") String langId) {
+		try {
+			Long traitId = Long.parseLong(trtId);
+			Long languageId = Long.parseLong(langId);
+			Map<String, Object> result = services.fetchByTraitIdByLanguageId(traitId, languageId);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.TRAIT + "/{traitId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find by traitId", notes = "Returns trait details for all translation", response = Facts.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "Couldn't find trait details", response = String.class) })
+
+	public Response getTraitByTraitId(@PathParam("traitId") String trtId) {
+		try {
+			Long traitId = Long.parseLong(trtId);
+			List<Map<String, Object>> result = services.fetchByTraitId(traitId);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
 	}
 
 	@GET
@@ -211,12 +312,32 @@ public class TraitsController {
 	}
 
 	@PUT
+	@Path(ApiConstants.UPDATE + "/{objectType}/{objectId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Adds new Traits", notes = "Returns the list of allTraitValue Pair", response = FactValuePair.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Unable to edit the Traits", response = String.class) })
+
+	public Response bulkTraitsUpdate(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
+			@PathParam("objectId") String objectId, @ApiParam(name = "factsAddData") Map<String, List> factsAddData,
+			@QueryParam("userId") String userId, @QueryParam("taxonId") String taxonId) {
+		try {
+			Long objId = Long.parseLong(objectId);
+			String result = services.bulkTraitsUpdate(request, objectType, objId, factsAddData, userId, taxonId);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@PUT
 	@Path(ApiConstants.UPDATE + "/{objectType}/{objectId}/{traitId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ValidateUser
-	
+
 	@ApiOperation(value = "Updates the Traits with Values", notes = "Returns the list of allTraitValue Pair", response = FactValuePair.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Unable to edit the Traits", response = String.class) })
 
@@ -235,17 +356,18 @@ public class TraitsController {
 	}
 
 	@GET
-	@Path(ApiConstants.SPECIES + ApiConstants.TRAIT + "/{taxonId}")
+	@Path(ApiConstants.SPECIES + ApiConstants.TRAIT + "/{taxonId}/{languageId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "Species traits and value", notes = "Return all the species traits for that taxon", response = TraitsValuePair.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
 
-	public Response getSpeciesTraits(@PathParam("taxonId") String taxonId) {
+	public Response getSpeciesTraits(@PathParam("taxonId") String taxonId, @PathParam("languageId") String languageId) {
 		try {
 			Long taxonConceptId = Long.parseLong(taxonId);
-			List<TraitsValuePair> result = services.getSpeciesTraits(taxonConceptId);
+			Long language = Long.parseLong(languageId);
+			List<TraitsValuePair> result = services.getSpeciesTraits(taxonConceptId, language);
 			return Response.status(Status.OK).entity(result).build();
 
 		} catch (Exception e) {
@@ -254,18 +376,63 @@ public class TraitsController {
 	}
 
 	@GET
-	@Path(ApiConstants.SPECIES)
+	@Path(ApiConstants.SPECIES + "/{languageId}")
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "All Species traits and value", notes = "Return all the species traits", response = TraitsValuePair.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
 
-	public Response getAllSpeciesTraits() {
+	public Response getAllSpeciesTraits(@PathParam("languageId") String languageId) {
 		try {
-			List<TraitsValuePair> result = services.getAllSpeciesTraits();
+			Long language = Long.parseLong(languageId);
+			List<TraitsValuePair> result = services.getAllSpeciesTraits(language);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.LIST + "/{languageId}")
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "All Species traits and value", notes = "Return all the species traits", response = TraitsValuePair.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
+
+	public Response getAllTraitsList(@PathParam("languageId") String languageId) {
+		try {
+			Long language = Long.parseLong(languageId);
+			List<TraitsValuePair> result = services.getAllTraits(language);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@Path(ApiConstants.UPLOAD + ApiConstants.BATCH)
+	@POST
+	@Consumes({ MediaType.MULTIPART_FORM_DATA })
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Upload the file for taxon definition batch upload", notes = "Returns succuess failure", response = FileMetadata.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "file not present", response = String.class),
+			@ApiResponse(code = 500, message = "ERROR", response = String.class) })
+	public Response uploadSearch(final FormDataMultiPart multiPart) {
+		FormDataBodyPart filePart = multiPart.getField("file");
+		List<String> traits = Arrays.asList(multiPart.getField("traits").getValue().split("\\|"));
+		String scientificNameColumn = multiPart.getField("scientificName").getValue();
+		String taxonColumn = multiPart.getField("TaxonConceptId").getValue();
+		String speciesIdColumn = multiPart.getField("SpeciesId").getValue();
+		String contributorColumn = multiPart.getField("Contributor").getValue();
+		FormDataBodyPart attributionColumn = multiPart.getField("Attribution");
+		FormDataBodyPart licenseColumn = multiPart.getField("License");
+		if (filePart == null) {
+			return Response.status(Response.Status.BAD_REQUEST).entity("File not present").build();
+		} else {
+			List<Map<String, String>> result;
+			result = services.importSpeciesTraits(filePart, traits, scientificNameColumn, taxonColumn, speciesIdColumn,
+					contributorColumn, (attributionColumn != null) ? attributionColumn.getValue() : null,
+					(licenseColumn != null) ? licenseColumn.getValue() : null);
+			return Response.ok().entity(result).build();
 		}
 	}
 

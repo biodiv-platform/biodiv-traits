@@ -72,40 +72,71 @@ public class TraitsValueDao extends AbstractDAO<TraitsValue, Long> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<Traits, List<TraitsValue>> findTraitValueList(Set<Long> traitSet, Boolean isObservation) {
+	public List<TraitsValue> findTraitsValueByLanguage(Long traitId, Long languageId) {
 
-		String qry = "from Traits t left join TraitsValue tv on t.id = tv.traitInstanceId where t.id in (:traitSet) ";
-
-		if (isObservation)
-			qry = qry + "and t.showInObservation = TRUE";
+		String qry = "from TraitsValue where traitInstanceId = :traitId and languageId = :languageId and isDeleted = false";
 		Session session = sessionFactory.openSession();
-		List<Object[]> resultList = new ArrayList<Object[]>();
-		Map<Traits, List<TraitsValue>> traitValueMap = new HashMap<Traits, List<TraitsValue>>();
+		List<TraitsValue> entity = null;
 		try {
-			Query<Object[]> query = session.createQuery(qry);
-			query.setParameter("traitSet", traitSet);
-			resultList = query.getResultList();
-			for (Object[] result : resultList) {
-				Traits traits = (Traits) result[0];
-				TraitsValue traitsValue = (TraitsValue) result[1];
-				List<TraitsValue> traitsValuesList = new ArrayList<TraitsValue>();
-				if (!traitValueMap.containsKey(traits)) {
-					if (traitsValue != null)
-						traitsValuesList.add(traitsValue);
-				} else {
-					traitsValuesList = traitValueMap.get(traits);
-					if (traitsValue != null)
-						traitsValuesList.add(traitsValue);
-				}
-				traitValueMap.put(traits, traitsValuesList);
-			}
+			Query<TraitsValue> query = session.createQuery(qry);
+			query.setParameter("traitId", traitId);
+			query.setParameter("languageId", languageId);
+			entity = query.getResultList();
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		} finally {
 			session.close();
 		}
-		return traitValueMap;
+		return entity;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Map<Traits, List<TraitsValue>> findTraitValueList(Set<Long> traitSet, Boolean isObservation, Long language) {
+
+	    String qry = "from Traits t left join TraitsValue tv on t.traitId = tv.traitInstanceId and t.languageId = tv.languageId where t.traitId in (:traitSet) ";
+
+	    if (isObservation)
+	        qry = qry + "and t.showInObservation = TRUE";
+	    Session session = sessionFactory.openSession();
+	    List<Object[]> resultList = new ArrayList<>();
+	    Map<Traits, List<TraitsValue>> traitValueMap = new HashMap<>();
+	    Map<Long, Traits> seenTraitIds = new HashMap<>();
+	    
+	    try {
+	        Query<Object[]> query = session.createQuery(qry);
+	        query.setParameter("traitSet", traitSet);
+	        resultList = query.getResultList();
+	        
+	        for (Object[] result : resultList) {
+	            Traits traits = (Traits) result[0];
+	            TraitsValue traitsValue = (TraitsValue) result[1];
+	            Long traitId = traits.getTraitId();
+
+	            if (!seenTraitIds.containsKey(traitId)) {
+	                // First occurrence, add it
+	                seenTraitIds.put(traitId, traits);
+	            } else if (traits.getLanguageId().equals(language)) {
+	                if (!seenTraitIds.get(traitId).getLanguageId().equals(language)) {
+	                    traitValueMap.remove(seenTraitIds.get(traitId));
+	                }
+	                seenTraitIds.put(traitId, traits);
+	            }
+
+	            Traits latestTraits = seenTraitIds.get(traitId);
+	            traitValueMap.computeIfAbsent(latestTraits, k -> new ArrayList<>());
+
+	            if (traitsValue != null && latestTraits.getLanguageId().equals(traitsValue.getLanguageId())) {
+	                traitValueMap.get(latestTraits).add(traitsValue);
+	            }
+	        }
+
+	    } catch (Exception e) {
+	        logger.error(e.getMessage());
+	    } finally {
+	        session.close();
+	    }
+	    return traitValueMap;
 	}
 
 }

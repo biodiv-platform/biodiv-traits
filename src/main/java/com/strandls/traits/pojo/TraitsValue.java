@@ -28,7 +28,12 @@ public class TraitsValue implements Serializable {
 	private String value;
 	private String icon;
 	private Long traitInstanceId;
+	private String description;
+	private String source;
 	private Boolean isDeleted;
+	private Long displayOrder;
+	private Long traitValueId;
+	private Long languageId;
 
 	@Id
 	@GeneratedValue
@@ -48,6 +53,33 @@ public class TraitsValue implements Serializable {
 
 	public void setValue(String value) {
 		this.value = value;
+	}
+
+	@Column(name = "display_order", columnDefinition = "BIGINT")
+	public Long getDisplayOrder() {
+		return displayOrder;
+	}
+
+	public void setDisplayOrder(Long displayOrder) {
+		this.displayOrder = displayOrder;
+	}
+
+	@Column(name = "description")
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	@Column(name = "source")
+	public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
 	}
 
 	@Column(name = "icon")
@@ -75,6 +107,24 @@ public class TraitsValue implements Serializable {
 
 	public void setIsDeleted(Boolean isDeleted) {
 		this.isDeleted = isDeleted;
+	}
+
+	@Column(name = "trait_value_id")
+	public Long getTraitValueId() {
+		return traitValueId;
+	}
+
+	public void setTraitValueId(Long traitValueId) {
+		this.traitValueId = traitValueId;
+	}
+
+	@Column(name = "language_id")
+	public Long getLanguageId() {
+		return languageId;
+	}
+
+	public void setLanguageId(Long languageId) {
+		this.languageId = languageId;
 	}
 
 }
