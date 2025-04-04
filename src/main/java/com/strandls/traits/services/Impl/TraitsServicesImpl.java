@@ -522,7 +522,6 @@ public class TraitsServicesImpl implements TraitsServices {
 
 //			To handle traits with User Entered Values
 			for (Entry<Long, List<String>> entry : factsCreateData.getFactValueString().entrySet()) {
-				System.out.print(entry);
 				Traits traits = traitsDao.findById(entry.getKey());
 
 				String attribution = userName;
@@ -543,9 +542,16 @@ public class TraitsServicesImpl implements TraitsServices {
 				} else if (traits.getDataType().equalsIgnoreCase(DATATYPE.NUMERIC.getValue())) {
 					for (String range : entry.getValue()) {
 						String[] value = range.split(":");
-						Facts facts = new Facts(null, attribution, userId, false, defaultLicenseId, objectId,
-								factsCreateData.getPageTaxonId(), entry.getKey(), null, value[0].trim(), objectType,
-								value[1].trim(), null, null);
+						Facts facts = new Facts();
+						if (value.length != 1) {
+							facts = new Facts(null, attribution, userId, false, defaultLicenseId, objectId,
+									factsCreateData.getPageTaxonId(), entry.getKey(), null, value[0].trim(), objectType,
+									value[1].trim(), null, null);
+						} else {
+							facts = new Facts(null, attribution, userId, false, defaultLicenseId, objectId,
+									factsCreateData.getPageTaxonId(), entry.getKey(), null, value[0].trim(), objectType,
+									null, null, null);
+						}
 						String description = traits.getName() + ":" + range;
 
 						saveUpdateFacts(request, objectType, objectId, facts, description,
@@ -900,7 +906,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				}
 				Map<String, Object> fields = new HashMap<>();
 				fields.put("facts", factsEs);
-				esService.update("extended_species","doc", objectId.toString(), fields);
+				esService.update("extended_species", "doc", objectId.toString(), fields);
 				return factsEs.toString();
 			}
 
@@ -977,9 +983,7 @@ public class TraitsServicesImpl implements TraitsServices {
 					} else if (valueString != null && !valueString.isEmpty()) {
 
 						if (trait.getDataType().equalsIgnoreCase(DATATYPE.COLOR.getValue())) {
-							if (!(valueString.contains(fact.getValue()))) {
-								factsDao.delete(fact);
-							}
+							factsDao.delete(fact);
 						} else if (trait.getDataType().equalsIgnoreCase(DATATYPE.NUMERIC.getValue())) {
 							factsDao.delete(fact);
 
@@ -1025,9 +1029,16 @@ public class TraitsServicesImpl implements TraitsServices {
 					} else if (trait.getDataType().equalsIgnoreCase(DATATYPE.NUMERIC.getValue())) {
 
 						String[] values = value.split(":");
-						Facts facts = new Facts(null, attribution, userId, false, defaultLicenseId, objectId,
-								factsUpdateData.getPageTaxonId(), traitId, null, values[0].trim(), objectType,
-								values[1].trim(), null, null);
+						Facts facts = new Facts();
+						if (values.length != 1) {
+							facts = new Facts(null, attribution, userId, false, defaultLicenseId, objectId,
+									factsUpdateData.getPageTaxonId(), traitId, null, values[0].trim(), objectType,
+									values[1].trim(), null, null);
+						} else {
+							facts = new Facts(null, attribution, userId, false, defaultLicenseId, objectId,
+									factsUpdateData.getPageTaxonId(), traitId, null, values[0].trim(), objectType, null,
+									null, null);
+						}
 						String description = trait.getName() + ":" + value;
 
 						saveUpdateFacts(request, objectType, objectId, facts, description, activityType,
