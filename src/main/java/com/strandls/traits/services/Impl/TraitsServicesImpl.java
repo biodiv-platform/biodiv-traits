@@ -1105,7 +1105,7 @@ public class TraitsServicesImpl implements TraitsServices {
 				TraitsValuePair traitValueMatch = new TraitsValuePair(trait, null);
 				if (trait.getDataType().equals("STRING")) {
 					List<TraitsValue> traitValues = traitsValueDao
-							.findTraitsValue(Long.valueOf(traitDetail.split("\\:")[1]));
+							.findTraitsValue(trait.getTraitId());
 					traitValueMatch.setValues(traitValues);
 				}
 				traits.put(traitDetail.split("\\:")[0], traitValueMatch);
