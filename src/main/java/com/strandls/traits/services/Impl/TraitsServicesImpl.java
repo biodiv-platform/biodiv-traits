@@ -362,6 +362,8 @@ public class TraitsServicesImpl implements TraitsServices {
 			}
 			Long index = (long) 0;
 			for (TraitsValue value : translation.getValues()) {
+				if(value.getValue().isEmpty())
+					continue;
 				traitValueIds.add(value.getTraitValueId());
 				if (value.getTraitValueId() != null) {
 					if (value.getId() != null) {
@@ -1110,8 +1112,11 @@ public class TraitsServicesImpl implements TraitsServices {
 				}
 				traits.put(traitDetail.split("\\:")[0], traitValueMatch);
 			}
-			for (Cell cell : headerRow) {
-				headers.add(cell.getStringCellValue());
+			for (int i =0 ; i<headerRow.getLastCellNum(); i++) {
+				if(headerRow.getCell(i) != null)
+					headers.add(headerRow.getCell(i).getStringCellValue());
+				else
+					headers.add("");
 			}
 			for (Row row : sheet) {
 				if (row.getRowNum() == 0) {
