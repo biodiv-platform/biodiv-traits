@@ -80,6 +80,9 @@ import net.minidev.json.JSONArray;
 public class TraitsServicesImpl implements TraitsServices {
 
 	private final Logger logger = LoggerFactory.getLogger(TraitsServicesImpl.class);
+	
+	private Long defaultLanguageId = Long
+			.parseLong(PropertyFileUtil.fetchProperty("config.properties", "defaultLanguageId"));
 
 	@Inject
 	private LogActivities logActivity;
@@ -128,7 +131,7 @@ public class TraitsServicesImpl implements TraitsServices {
 		List<Long> allTraits = traitsDao.findAllObservationTrait();
 		Set<Long> traitSet = new HashSet<Long>();
 		traitSet.addAll(allTraits);
-		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true, (long) 193);
+		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true, (long) 193, defaultLanguageId);
 
 		TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(new Comparator<Traits>() {
 
@@ -163,7 +166,7 @@ public class TraitsServicesImpl implements TraitsServices {
 		List<Long> speciesTraits = traitsDao.findAllTraitsList();
 
 		traitSet.addAll(speciesTraits);
-		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false, language);
+		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false, language, defaultLanguageId);
 
 		TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(new Comparator<Traits>() {
 
@@ -192,7 +195,7 @@ public class TraitsServicesImpl implements TraitsServices {
 		List<Long> speciesTraits = traitsDao.findAllSpeciesTraits();
 
 		traitSet.addAll(speciesTraits);
-		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false, language);
+		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false, language, defaultLanguageId);
 
 		TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(new Comparator<Traits>() {
 
@@ -241,7 +244,7 @@ public class TraitsServicesImpl implements TraitsServices {
 
 //			get the values
 
-			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false, language);
+			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false, language, defaultLanguageId);
 
 			TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(
 					new Comparator<Traits>() {
@@ -300,7 +303,7 @@ public class TraitsServicesImpl implements TraitsServices {
 			}
 
 			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true,
-					languageId);
+					languageId, defaultLanguageId);
 
 			TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(
 					new Comparator<Traits>() {
@@ -610,7 +613,10 @@ public class TraitsServicesImpl implements TraitsServices {
 	public Map<String, Object> fetchByTraitIdByLanguageId(Long traitId, Long languageId) {
 		List<Traits> traitDetails = traitsDao.findTraitByTraitIdAndLanguageId(traitId, languageId);
 		if (traitDetails.size() == 0) {
-			traitDetails = traitsDao.findTraitByTraitId(traitId);
+			traitDetails = traitsDao.findTraitByTraitIdAndLanguageId(traitId, defaultLanguageId);
+			if(traitDetails.size()==0){
+				traitDetails = traitsDao.findTraitByTraitId(traitId);
+			}
 		}
 		List<TraitsValue> traitValuesList = traitsValueDao.findTraitsValueByLanguage(traitId,
 				traitDetails.get(0).getLanguageId());
