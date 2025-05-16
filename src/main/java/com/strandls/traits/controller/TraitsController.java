@@ -209,6 +209,10 @@ public class TraitsController {
 			@PathParam("languageId") String languageId) {
 
 		try {
+			if (speciesGroupId == null || speciesGroupId.equals("undefined") || languageId == null
+					|| languageId.equals("undefined")) {
+				return Response.status(Status.BAD_REQUEST).entity("speciesGroupId or languageId is missing").build();
+			}
 			Long sGroup = Long.parseLong(speciesGroupId);
 			Long language = Long.parseLong(languageId);
 			List<TraitsValuePair> result = services.getObservationTraitList(sGroup, language);
