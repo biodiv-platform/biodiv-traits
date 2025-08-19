@@ -6,11 +6,11 @@ package com.strandls.traits.pojo;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 /**
  * @author Abhishek Rudra
@@ -178,7 +178,7 @@ public class Traits implements Serializable {
 	public void setIsNotObservationTraits(Boolean isNotObservationTraits) {
 		this.isNotObservationTraits = isNotObservationTraits;
 	}
-	
+
 	@Column(name = "trait_id")
 	public Long getTraitId() {
 		return traitId;
@@ -187,7 +187,7 @@ public class Traits implements Serializable {
 	public void setTraitId(Long traitId) {
 		this.traitId = traitId;
 	}
-	
+
 	@Column(name = "language_id")
 	public Long getLanguageId() {
 		return languageId;

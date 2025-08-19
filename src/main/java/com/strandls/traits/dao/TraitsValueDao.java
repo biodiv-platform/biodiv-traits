@@ -15,11 +15,11 @@ import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-
 import com.strandls.traits.pojo.Traits;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.util.AbstractDAO;
+
+import jakarta.inject.Inject;
 
 /**
  * @author Abhishek Rudra
@@ -92,57 +92,57 @@ public class TraitsValueDao extends AbstractDAO<TraitsValue, Long> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<Traits, List<TraitsValue>> findTraitValueList(Set<Long> traitSet, Boolean isObservation, Long language, Long defaultLanguageId) {
+	public Map<Traits, List<TraitsValue>> findTraitValueList(Set<Long> traitSet, Boolean isObservation, Long language,
+			Long defaultLanguageId) {
 
-	    String qry = "from Traits t left join TraitsValue tv on t.traitId = tv.traitInstanceId and t.languageId = tv.languageId where t.traitId in (:traitSet) ";
+		String qry = "from Traits t left join TraitsValue tv on t.traitId = tv.traitInstanceId and t.languageId = tv.languageId where t.traitId in (:traitSet) ";
 
-	    if (isObservation)
-	        qry = qry + "and t.showInObservation = TRUE";
-	    Session session = sessionFactory.openSession();
-	    List<Object[]> resultList = new ArrayList<>();
-	    Map<Traits, List<TraitsValue>> traitValueMap = new HashMap<>();
-	    Map<Long, Traits> seenTraitIds = new HashMap<>();
-	    
-	    try {
-	        Query<Object[]> query = session.createQuery(qry);
-	        query.setParameter("traitSet", traitSet);
-	        resultList = query.getResultList();
-	        
-	        for (Object[] result : resultList) {
-	            Traits traits = (Traits) result[0];
-	            TraitsValue traitsValue = (TraitsValue) result[1];
-	            Long traitId = traits.getTraitId();
+		if (isObservation)
+			qry = qry + "and t.showInObservation = TRUE";
+		Session session = sessionFactory.openSession();
+		List<Object[]> resultList = new ArrayList<>();
+		Map<Traits, List<TraitsValue>> traitValueMap = new HashMap<>();
+		Map<Long, Traits> seenTraitIds = new HashMap<>();
 
-	            if (!seenTraitIds.containsKey(traitId)) {
-	                // First occurrence, add it
-	                seenTraitIds.put(traitId, traits);
-	            } else if (traits.getLanguageId().equals(defaultLanguageId)) {
-	            	if (!seenTraitIds.get(traitId).getLanguageId().equals(defaultLanguageId)) {
-	                    traitValueMap.remove(seenTraitIds.get(traitId));
-	                }
-	                seenTraitIds.put(traitId, traits);
-	            }
-	            else if (traits.getLanguageId().equals(language)) {
-	                if (!seenTraitIds.get(traitId).getLanguageId().equals(language)) {
-	                    traitValueMap.remove(seenTraitIds.get(traitId));
-	                }
-	                seenTraitIds.put(traitId, traits);
-	            }
+		try {
+			Query<Object[]> query = session.createQuery(qry);
+			query.setParameter("traitSet", traitSet);
+			resultList = query.getResultList();
 
-	            Traits latestTraits = seenTraitIds.get(traitId);
-	            traitValueMap.computeIfAbsent(latestTraits, k -> new ArrayList<>());
+			for (Object[] result : resultList) {
+				Traits traits = (Traits) result[0];
+				TraitsValue traitsValue = (TraitsValue) result[1];
+				Long traitId = traits.getTraitId();
 
-	            if (traitsValue != null && latestTraits.getLanguageId().equals(traitsValue.getLanguageId())) {
-	                traitValueMap.get(latestTraits).add(traitsValue);
-	            }
-	        }
+				if (!seenTraitIds.containsKey(traitId)) {
+					// First occurrence, add it
+					seenTraitIds.put(traitId, traits);
+				} else if (traits.getLanguageId().equals(defaultLanguageId)) {
+					if (!seenTraitIds.get(traitId).getLanguageId().equals(defaultLanguageId)) {
+						traitValueMap.remove(seenTraitIds.get(traitId));
+					}
+					seenTraitIds.put(traitId, traits);
+				} else if (traits.getLanguageId().equals(language)) {
+					if (!seenTraitIds.get(traitId).getLanguageId().equals(language)) {
+						traitValueMap.remove(seenTraitIds.get(traitId));
+					}
+					seenTraitIds.put(traitId, traits);
+				}
 
-	    } catch (Exception e) {
-	        logger.error(e.getMessage());
-	    } finally {
-	        session.close();
-	    }
-	    return traitValueMap;
+				Traits latestTraits = seenTraitIds.get(traitId);
+				traitValueMap.computeIfAbsent(latestTraits, k -> new ArrayList<>());
+
+				if (traitsValue != null && latestTraits.getLanguageId().equals(traitsValue.getLanguageId())) {
+					traitValueMap.get(latestTraits).add(traitsValue);
+				}
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return traitValueMap;
 	}
 
 }

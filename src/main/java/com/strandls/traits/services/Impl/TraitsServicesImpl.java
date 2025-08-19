@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.strandls.traits.services.Impl;
 
@@ -23,31 +23,27 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.HttpHeaders;
-
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.jvnet.hk2.annotations.Service;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.strandls.activity.pojo.MailData;
 import com.strandls.authentication_utility.util.AuthUtil;
-import com.strandls.taxonomy.controllers.SpeciesServicesApi;
-import com.strandls.taxonomy.controllers.TaxonomyTreeServicesApi;
-import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
 import com.strandls.esmodule.ApiException;
 import com.strandls.esmodule.controllers.EsServicesApi;
+import com.strandls.taxonomy.controllers.SpeciesServicesApi;
+import com.strandls.taxonomy.controllers.TaxonomyServicesApi;
+import com.strandls.taxonomy.controllers.TaxonomyTreeServicesApi;
 import com.strandls.taxonomy.pojo.BreadCrumb;
 import com.strandls.taxonomy.pojo.TaxonomyDefinition;
 import com.strandls.traits.dao.FactsDAO;
@@ -71,45 +67,48 @@ import com.strandls.traits.util.Constants.TRAITTYPE;
 import com.strandls.traits.util.PropertyFileUtil;
 import com.strandls.traits.util.TraitsException;
 
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.HttpHeaders;
 import net.minidev.json.JSONArray;
 
 /**
  * @author Abhishek Rudra
  *
  */
+@Service
 public class TraitsServicesImpl implements TraitsServices {
 
 	private final Logger logger = LoggerFactory.getLogger(TraitsServicesImpl.class);
-	
+
 	private Long defaultLanguageId = Long
 			.parseLong(PropertyFileUtil.fetchProperty("config.properties", "defaultLanguageId"));
 
-	@Inject
-	private LogActivities logActivity;
+	private final LogActivities logActivity;
+	private final FactsDAO factsDao;
+	private final TraitsDao traitsDao;
+	private final TraitTaxonomyDefinitionDao traitTaxonomyDef;
+	private final SpeciesServicesApi speciesService;
+	private final TaxonomyServicesApi taxonomyService;
+	private final EsServicesApi esService;
+	private final TaxonomyTreeServicesApi taxonomyTreeService;
+	private final TraitsValueDao traitsValueDao;
 
 	@Inject
-	private FactsDAO factsDao;
-
-	@Inject
-	private TraitsDao traitsDao;
-
-	@Inject
-	private TraitTaxonomyDefinitionDao traitTaxonomyDef;
-
-	@Inject
-	private SpeciesServicesApi speciesService;
-
-	@Inject
-	private TaxonomyServicesApi taxonomyService;
-
-	@Inject
-	private EsServicesApi esService;
-
-	@Inject
-	private TaxonomyTreeServicesApi taxonomyTreeService;
-
-	@Inject
-	private TraitsValueDao traitsValueDao;
+	public TraitsServicesImpl(LogActivities logActivity, FactsDAO factsDao, TraitsDao traitsDao,
+			TraitTaxonomyDefinitionDao traitTaxonomyDef, SpeciesServicesApi speciesService,
+			TaxonomyServicesApi taxonomyService, EsServicesApi esService, TaxonomyTreeServicesApi taxonomyTreeService,
+			TraitsValueDao traitsValueDao) {
+		this.logActivity = logActivity;
+		this.factsDao = factsDao;
+		this.traitsDao = traitsDao;
+		this.traitTaxonomyDef = traitTaxonomyDef;
+		this.speciesService = speciesService;
+		this.taxonomyService = taxonomyService;
+		this.esService = esService;
+		this.taxonomyTreeService = taxonomyTreeService;
+		this.traitsValueDao = traitsValueDao;
+	}
 
 	private Long defaultLicenseId = Long
 			.parseLong(PropertyFileUtil.fetchProperty("config.properties", "defaultLicenseId"));
@@ -131,7 +130,8 @@ public class TraitsServicesImpl implements TraitsServices {
 		List<Long> allTraits = traitsDao.findAllObservationTrait();
 		Set<Long> traitSet = new HashSet<Long>();
 		traitSet.addAll(allTraits);
-		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true, (long) 193, defaultLanguageId);
+		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true, (long) 193,
+				defaultLanguageId);
 
 		TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(new Comparator<Traits>() {
 
@@ -166,7 +166,8 @@ public class TraitsServicesImpl implements TraitsServices {
 		List<Long> speciesTraits = traitsDao.findAllTraitsList();
 
 		traitSet.addAll(speciesTraits);
-		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false, language, defaultLanguageId);
+		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false, language,
+				defaultLanguageId);
 
 		TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(new Comparator<Traits>() {
 
@@ -195,7 +196,8 @@ public class TraitsServicesImpl implements TraitsServices {
 		List<Long> speciesTraits = traitsDao.findAllSpeciesTraits();
 
 		traitSet.addAll(speciesTraits);
-		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false, language, defaultLanguageId);
+		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false, language,
+				defaultLanguageId);
 
 		TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(new Comparator<Traits>() {
 
@@ -244,7 +246,8 @@ public class TraitsServicesImpl implements TraitsServices {
 
 //			get the values
 
-			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false, language, defaultLanguageId);
+			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, false, language,
+					defaultLanguageId);
 
 			TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(
 					new Comparator<Traits>() {
@@ -302,8 +305,8 @@ public class TraitsServicesImpl implements TraitsServices {
 				traitSet.add(trait);
 			}
 
-			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true,
-					languageId, defaultLanguageId);
+			Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true, languageId,
+					defaultLanguageId);
 
 			TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(
 					new Comparator<Traits>() {
@@ -365,7 +368,7 @@ public class TraitsServicesImpl implements TraitsServices {
 			}
 			Long index = (long) 0;
 			for (TraitsValue value : translation.getValues()) {
-				if(value.getValue().isEmpty())
+				if (value.getValue().isEmpty())
 					continue;
 				traitValueIds.add(value.getTraitValueId());
 				if (value.getTraitValueId() != null) {
@@ -614,7 +617,7 @@ public class TraitsServicesImpl implements TraitsServices {
 		List<Traits> traitDetails = traitsDao.findTraitByTraitIdAndLanguageId(traitId, languageId);
 		if (traitDetails.size() == 0) {
 			traitDetails = traitsDao.findTraitByTraitIdAndLanguageId(traitId, defaultLanguageId);
-			if(traitDetails.size()==0){
+			if (traitDetails.size() == 0) {
 				traitDetails = traitsDao.findTraitByTraitId(traitId);
 			}
 		}
@@ -1112,14 +1115,13 @@ public class TraitsServicesImpl implements TraitsServices {
 				Traits trait = traitsDao.findById(Long.valueOf(traitDetail.split("\\:")[1]));
 				TraitsValuePair traitValueMatch = new TraitsValuePair(trait, null);
 				if (trait.getDataType().equals("STRING")) {
-					List<TraitsValue> traitValues = traitsValueDao
-							.findTraitsValue(trait.getTraitId());
+					List<TraitsValue> traitValues = traitsValueDao.findTraitsValue(trait.getTraitId());
 					traitValueMatch.setValues(traitValues);
 				}
 				traits.put(traitDetail.split("\\:")[0], traitValueMatch);
 			}
-			for (int i =0 ; i<headerRow.getLastCellNum(); i++) {
-				if(headerRow.getCell(i) != null)
+			for (int i = 0; i < headerRow.getLastCellNum(); i++) {
+				if (headerRow.getCell(i) != null)
 					headers.add(headerRow.getCell(i).getStringCellValue());
 				else
 					headers.add("");

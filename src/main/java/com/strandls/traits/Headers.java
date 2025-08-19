@@ -3,9 +3,9 @@
  */
 package com.strandls.traits;
 
-import javax.ws.rs.core.HttpHeaders;
+import com.strandls.activity.controller.ActivityServiceApi;
 
-import com.strandls.activity.controller.ActivitySerivceApi;
+import jakarta.ws.rs.core.HttpHeaders;
 
 /**
  * @author Abhishek Rudra
@@ -13,7 +13,7 @@ import com.strandls.activity.controller.ActivitySerivceApi;
  */
 public class Headers {
 
-	public ActivitySerivceApi addActivityHeader(ActivitySerivceApi activityService, String token) {
+	public ActivityServiceApi addActivityHeader(ActivityServiceApi activityService, String token) {
 		activityService.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, token);
 		return activityService;
 	}

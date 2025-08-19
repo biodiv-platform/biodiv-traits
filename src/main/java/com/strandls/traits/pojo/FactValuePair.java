@@ -1,17 +1,17 @@
 /**
- * 
+ *
  */
 package com.strandls.traits.pojo;
 
 import java.util.Date;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * @author Abhishek Rudra
  *
  */
-@ApiModel
+@Schema
 public class FactValuePair {
 
 	private Long nameId;
@@ -25,7 +25,7 @@ public class FactValuePair {
 	private Boolean isParticipatry;
 
 	/**
-	 * 
+	 *
 	 */
 	public FactValuePair() {
 		super();

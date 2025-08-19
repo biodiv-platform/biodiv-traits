@@ -15,6 +15,6 @@ public class TraitsControllerModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		bind(TraitsController.class).in(Scopes.SINGLETON);
-		
+
 	}
 }

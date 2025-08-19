@@ -52,10 +52,11 @@ public class Constants {
 			return action;
 		}
 	}
-	
-	public enum TRAITMSG{
-		
-		ADDEDFACT("Added a fact"),UPDATEDFACT("Updated fact");
+
+	public enum TRAITMSG {
+
+		ADDEDFACT("Added a fact"), UPDATEDFACT("Updated fact");
+
 		private String action;
 
 		private TRAITMSG(String action) {

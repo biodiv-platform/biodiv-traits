@@ -1,14 +1,13 @@
 /**
- * 
+ *
  */
 package com.strandls.traits.services;
 
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.jvnet.hk2.annotations.Contract;
 
 import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
@@ -19,10 +18,13 @@ import com.strandls.traits.pojo.TraitsCreateData;
 import com.strandls.traits.pojo.TraitsValue;
 import com.strandls.traits.pojo.TraitsValuePair;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 /**
  * @author Abhishek Rudra
  *
  */
+@Contract
 public interface TraitsServices {
 
 	public List<FactValuePair> getFacts(String objectType, Long objectId, Long traitId);
