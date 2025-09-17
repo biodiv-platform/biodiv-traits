@@ -231,7 +231,7 @@ public class TraitsController {
 	@ApiOperation(value = "Find all Trait Values pair for Specific SpeciesGroupId", notes = "Return the Key value pairs of Traits", response = TraitsValuePair.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Species Not Found", response = String.class) })
 
-	public Response getTraitList(
+	public Response getRootTraitList(
 			@PathParam("languageId") String languageId) {
 
 		try {
