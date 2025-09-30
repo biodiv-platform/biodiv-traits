@@ -68,4 +68,6 @@ public interface TraitsServices {
 
 	public List<Traits> getAllTraitsNames();
 
+	public List<TraitsValuePair> getRootTraitList(Long language);
+
 }

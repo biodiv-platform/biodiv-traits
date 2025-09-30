@@ -222,6 +222,31 @@ public class TraitsController {
 		}
 
 	}
+	
+	@GET
+	@Path(ApiConstants.ROOTTRAITS + "/{languageId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find all Trait Values pair for Specific SpeciesGroupId", notes = "Return the Key value pairs of Traits", response = TraitsValuePair.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Species Not Found", response = String.class) })
+
+	public Response getRootTraitList(
+			@PathParam("languageId") String languageId) {
+
+		try {
+			if (languageId == null
+					|| languageId.equals("undefined")) {
+				return Response.status(Status.BAD_REQUEST).entity("speciesGroupId or languageId is missing").build();
+			}
+			Long language = Long.parseLong(languageId);
+			List<TraitsValuePair> result = services.getRootTraitList(language);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+
+	}
 
 	@GET
 	@Path(ApiConstants.TRAIT + "/{traitId}/{languageId}")

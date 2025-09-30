@@ -34,5 +34,6 @@ public class ApiConstants {
 	public static final String LIST = "/list";
 	public static final String UPLOAD = "/upload";
 	public static final String BATCH = "/batch-upload";
+	public static final String ROOTTRAITS = "/root-traits";
 
 }
