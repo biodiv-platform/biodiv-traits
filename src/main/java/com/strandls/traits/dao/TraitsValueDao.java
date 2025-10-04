@@ -95,7 +95,7 @@ public class TraitsValueDao extends AbstractDAO<TraitsValue, Long> {
 	public Map<Traits, List<TraitsValue>> findTraitValueList(Set<Long> traitSet, Boolean isObservation, Long language,
 			Long defaultLanguageId) {
 
-		String qry = "from Traits t left join TraitsValue tv on t.traitId = tv.traitInstanceId and t.languageId = tv.languageId where t.traitId in (:traitSet) ";
+		String qry = "select t, tv from Traits t left join TraitsValue tv on t.traitId = tv.traitInstanceId and t.languageId = tv.languageId where t.traitId in (:traitSet) ";
 
 		if (isObservation)
 			qry = qry + "and t.showInObservation = TRUE";
