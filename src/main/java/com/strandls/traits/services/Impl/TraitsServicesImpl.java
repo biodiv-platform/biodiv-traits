@@ -270,6 +270,35 @@ public class TraitsServicesImpl implements TraitsServices {
 
 		return null;
 	}
+	
+	@Override
+	public List<TraitsValuePair> getRootTraitList(Long languageId) {
+		List<Long> rootTrait = traitTaxonomyDef.findAllObservationRootTrait();
+		Set<Long> traitSet = new TreeSet<Long>();
+		List<TraitsValuePair> traitValuePair = new ArrayList<TraitsValuePair>();
+		for (Long trait : rootTrait) {
+			traitSet.add(trait);
+		}
+		Map<Traits, List<TraitsValue>> traitValueMap = traitsValueDao.findTraitValueList(traitSet, true,
+				languageId, defaultLanguageId);
+
+		TreeMap<Traits, List<TraitsValue>> sorted = new TreeMap<Traits, List<TraitsValue>>(
+				new Comparator<Traits>() {
+
+					@Override
+					public int compare(Traits o1, Traits o2) {
+						if (o1.getTraitId() < o2.getTraitId())
+							return -1;
+						return 1;
+					}
+				});
+		sorted.putAll(traitValueMap);
+
+		for (Traits traits : sorted.keySet()) {
+			traitValuePair.add(new TraitsValuePair(traits, traitValueMap.get(traits)));
+		}
+		return traitValuePair;
+	}
 
 	@Override
 	public List<TraitsValuePair> getObservationTraitList(Long speciesGroupId, Long languageId) {
