@@ -5,6 +5,8 @@ package com.strandls.traits.pojo;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 import io.swagger.annotations.ApiModel;
 
 /**
@@ -22,6 +24,8 @@ public class FactValuePair {
 	private Date fromDate;
 	private Date toDate;
 	private String type;
+
+	@JsonAlias({"isParticipatory", "isParticipatry"})
 	private Boolean isParticipatry;
 
 	/**
