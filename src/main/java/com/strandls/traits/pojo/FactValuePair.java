@@ -6,6 +6,7 @@ package com.strandls.traits.pojo;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 import io.swagger.annotations.ApiModel;
 
@@ -120,6 +121,11 @@ public class FactValuePair {
 
 	public void setIsParticipatry(Boolean isParticipatry) {
 		this.isParticipatry = isParticipatry;
+	}
+	
+	@JsonSetter("isParticipatory")
+	public void handleIsParticipatory(Boolean isParticipatory) {
+	    this.isParticipatry = isParticipatory;
 	}
 
 }
