@@ -13,6 +13,7 @@ import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.taxonomy.pojo.FileMetadata;
 import com.strandls.traits.ApiConstants;
+import com.strandls.traits.dao.FactsDAO;
 import com.strandls.traits.pojo.FactValuePair;
 import com.strandls.traits.pojo.Facts;
 import com.strandls.traits.pojo.FactsCreateData;
@@ -61,6 +62,9 @@ public class TraitsController {
 	public TraitsController(TraitsServices services) {
 		this.services = services;
 	}
+
+	@Inject
+	private FactsDAO factsDao;
 
 	@GET
 	@Path(ApiConstants.PING)
@@ -225,7 +229,7 @@ public class TraitsController {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
 	}
-	
+
 	@GET
 	@Path(ApiConstants.ROOTTRAITS + "/{languageId}")
 	@Consumes(MediaType.TEXT_PLAIN)
@@ -473,6 +477,22 @@ public class TraitsController {
 					contributorColumn, (attributionColumn != null) ? attributionColumn.getValue() : null,
 					(licenseColumn != null) ? licenseColumn.getValue() : null);
 			return Response.ok().entity(result).build();
+		}
+	}
+
+	@POST
+	@Path("/merge" + "/{objectId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.TEXT_PLAIN)
+	@Operation(summary = "Merge facts to target", requestBody = @RequestBody(required = true, description = "List of object IDs", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Long.class)))), responses = {
+			@ApiResponse(responseCode = "200", description = "Resources merged"),
+			@ApiResponse(responseCode = "400", description = "unable to merge facts", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response merge(@PathParam("objectId") String objectId, List<Long> objectIds) {
+		try {
+			factsDao.mergeMultipleCategoricalFacts("species.Species", objectIds, Long.parseLong(objectId));
+			return Response.status(Response.Status.OK).entity("MERGED").build();
+		} catch (Exception e) {
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 
