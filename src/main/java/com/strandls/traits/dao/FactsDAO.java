@@ -259,21 +259,15 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 				existing.add(key);
 			}
 
-			// Update non-duplicates
-			int updated = 0;
-			int skipped = 0;
-
 			for (Facts source : sourceFacts) {
 				String key = source.getTraitInstanceId() + "|" + source.getTraitValueId();
 
 				if (existing.contains(key)) {
-					skipped++;
 					continue;
 				}
 
 				source.setObjectId(agerId);
 				session.update(source);
-				updated++;
 			}
 
 			tx.commit();
