@@ -6,10 +6,14 @@ package com.strandls.traits.dao;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -220,4 +224,60 @@ public class FactsDAO extends AbstractDAO<Facts, Long> {
 		return null;
 	}
 
+	public void mergeMultipleCategoricalFacts(String objectType, List<Long> sourceObjectIds, Long agerId) {
+
+		Session session = sessionFactory.openSession();
+		Transaction tx = null;
+
+		try {
+			tx = session.beginTransaction();
+
+			// Fetch source facts
+			List<Facts> sourceFacts = session.createQuery("from Facts f " + "where f.objectId in (:sourceIds) "
+					+ "and f.objectType = :type "
+					+ "and exists (select 1 from Traits t where t.id = f.traitInstanceId and t.traitTypes = 'MULTIPLE_CATEGORICAL')",
+					Facts.class).setParameter("sourceIds", sourceObjectIds).setParameter("type", objectType).list();
+
+			if (sourceFacts.isEmpty()) {
+				return;
+			}
+
+			// Get trait IDs from source facts
+			List<Long> traitIds = sourceFacts.stream().map(Facts::getTraitInstanceId).distinct()
+					.collect(Collectors.toList());
+
+			// Fetch target facts
+			List<Facts> targetFacts = session
+					.createQuery("from Facts f " + "where f.objectId = :agerId " + "and f.objectType = :type "
+							+ "and f.traitInstanceId in (:traitIds)", Facts.class)
+					.setParameter("agerId", agerId).setParameter("type", objectType).setParameter("traitIds", traitIds)
+					.list();
+
+			Set<String> existing = new HashSet<>();
+			for (Facts targetFact : targetFacts) {
+				String key = targetFact.getTraitInstanceId() + "|" + targetFact.getTraitValueId();
+				existing.add(key);
+			}
+
+			for (Facts source : sourceFacts) {
+				String key = source.getTraitInstanceId() + "|" + source.getTraitValueId();
+
+				if (existing.contains(key)) {
+					continue;
+				}
+
+				source.setObjectId(agerId);
+				session.update(source);
+			}
+
+			tx.commit();
+
+		} catch (Exception e) {
+			if (tx != null)
+				tx.rollback();
+			throw new RuntimeException("Failed to merge facts", e);
+		} finally {
+			session.close();
+		}
+	}
 }
